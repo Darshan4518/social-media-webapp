@@ -8,21 +8,28 @@ export const register = async (req, res) => {
   try {
     const { userName, email, password } = req.body;
     if (!userName || !email || !password) {
-      return res.status(401).json({ msg: "please fill the register form" });
+      return res.status(401).json({ message: "please fill the register form" });
     }
     const user = await User.findOne({ email });
     if (user) {
-      return res.status(401).json({ msg: "User already Exist" });
+      return res.status(401).json({ message: "User already Exist" });
     }
     const hashPassword = await bcrypt.hash(password, 10);
+
+    const existUsername = await User.findOne({ userName });
+
+    if (existUsername) {
+      return res.status(401).json({ message: "user_name already taken" });
+    }
+
     const users = User.create({
       userName,
       email,
       password: hashPassword,
     });
-    return res.status(201).json({ massage: "Account Successfully Created.." });
+    return res.status(201).json({ message: "Account Successfully Created.." });
   } catch (error) {
-    return res.status(500).json({ massage: "internal server Error." });
+    console.log(error);
   }
 };
 
@@ -34,12 +41,12 @@ export const login = async (req, res) => {
     }
     let user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ msg: "Incorrect email or password" });
+      return res.status(401).json({ message: "Incorrect email or password" });
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(401).json({ msg: " Password doesn't Match" });
+      return res.status(401).json({ message: " Password doesn't Match" });
     }
 
     // populate the user posts
@@ -72,12 +79,13 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
     return res
+      .status(200)
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "strict",
         maxAge: 1 * 24 * 60 * 60 * 1000,
       })
-      .json({ massage: "Logined successfully", user });
+      .json({ message: "Logined successfully", user });
   } catch (error) {
     console.log(error);
   }
