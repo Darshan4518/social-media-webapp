@@ -1,9 +1,9 @@
 import sharp from "sharp";
-import cloudinary from "../utils/cloudinary";
-import { Post } from "../models/posts.model";
-import { User } from "../models/user.model";
-import { Comment } from "../models/comment.model";
-export const post = async (req, res) => {
+import cloudinary from "../utils/cloudinary.js";
+import { Post } from "../models/posts.model.js";
+import { User } from "../models/user.model.js";
+import { Comment } from "../models/comment.model.js";
+export const uploadPost = async (req, res) => {
   try {
     const { caption } = req.body;
     const { image } = req.file;

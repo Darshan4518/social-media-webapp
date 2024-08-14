@@ -6,10 +6,12 @@ const conversationSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  message: {
-    type: mongoose.Types.ObjectId,
-    ref: "Message",
-  },
+  messages: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Message",
+    },
+  ],
 });
 
-export const Conversation = mongoose.Schema("Conversation", conversationSchema);
+export const Conversation = mongoose.model("Conversation", conversationSchema);
