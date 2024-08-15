@@ -2,15 +2,18 @@ import React, { useState } from "react";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 
 import { MdOutlineAlternateEmail } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { setAuthUser } from "@/redux/authSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [passwordType, setPasswordType] = useState(true);
-
+  const navigate = useNavigate();
   const [input, setInput] = useState({
     email: "",
     password: "",
@@ -27,11 +30,14 @@ const Login = () => {
 
       const res = await axios.post(
         "http://localhost:5000/api/v1/user/login",
-        input
+        input,
+        {
+          withCredentials: true,
+        }
       );
       if (res.status === 200) {
-        console.log(res);
-
+        navigate("/");
+        dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
         setInput({
           email: "",

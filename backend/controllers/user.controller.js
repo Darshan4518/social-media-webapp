@@ -75,11 +75,10 @@ export const login = async (req, res) => {
 
     const token = await jwt.sign(
       { userId: user._id },
-      "jfdkusdhlfiuserytghfiurehgire=]897*(%&$%&(^*&(gieurkhgnkjfdhgfdkjgyfghyf46d54f45",
+      "jfdkusdhlfiuserytghfiurehg",
       { expiresIn: "1d" }
     );
     return res
-      .status(200)
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "strict",

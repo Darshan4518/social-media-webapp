@@ -17,7 +17,7 @@ const router = express.Router();
 
 router
   .route("/addpost")
-  .post(isAuthonticated, upload.single("post"), uploadPost);
+  .post(isAuthonticated, upload.single("image"), uploadPost);
 router.route("/all").get(isAuthonticated, getAllPost);
 router.route("/userpost/all").post(isAuthonticated, getUserPost);
 router.route("/:id/like").get(isAuthonticated, likePost);

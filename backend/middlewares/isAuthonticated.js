@@ -5,10 +5,7 @@ export const isAuthonticated = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: "user not authonticated" });
     }
-    const decode = jwt.verify(
-      token,
-      "jfdkusdhlfiuserytghfiurehgire=]897*(%&$%&(^*&(gieurkhgnkjfdhgfdkjgyfghyf46d54f45"
-    );
+    const decode = jwt.verify(token, "jfdkusdhlfiuserytghfiurehg");
     if (!decode) {
       return res.status(401).json({ message: "Invalid token" });
     }

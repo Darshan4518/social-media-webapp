@@ -6,10 +6,13 @@ import { Comment } from "../models/comment.model.js";
 export const uploadPost = async (req, res) => {
   try {
     const { caption } = req.body;
-    const { image } = req.file;
-    const authorId = req.id;
-    if (!image) res.status(400).json({ message: "Image required" });
-    const optimaizedImageBuffer = await sharp(image.buffer)
+    const image = req.file;
+
+    if (!image) {
+      return res.status(400).json({ message: "Image required" });
+    }
+
+    const optimizedImageBuffer = await sharp(image.buffer)
       .resize({
         width: 800,
         height: 800,
@@ -17,27 +20,52 @@ export const uploadPost = async (req, res) => {
       })
       .toFormat("jpeg", { quality: 90 })
       .toBuffer();
-    const fileUri = `data:image/jepg;base64,${optimaizedImageBuffer.toString(
+
+    const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
       "base64"
     )}`;
+
     const cloudinaryResponse = await cloudinary.uploader.upload(fileUri);
+
     const post = await Post.create({
       caption,
       image: cloudinaryResponse.secure_url,
-      author: authorId,
+      author: req.id,
     });
-    const user = await User.findById(authorId);
 
+    const user = await User.findById(req.id);
     if (user) {
       user.posts.push(post._id);
       await user.save();
     }
-    return res.status(201).json({ message: "post created successfully" });
+
+    return res.status(201).json({ message: "Post created successfully", post });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
+const handlePostClick = async () => {
+  const formData = new FormData();
+  formData.append("file", selectedImage); // 'file' must match the name used in Multer's `upload.single('file')`
+  formData.append("caption", caption);
+
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/v1/upload-post",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    console.log(res.data);
+  } catch (error) {
+    console.error("Error uploading post:", error);
+  }
+};
 export const getAllPost = async (req, res) => {
   try {
     const posts = await Post.find()
