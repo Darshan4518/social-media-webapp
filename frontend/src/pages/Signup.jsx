@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { FaRegUser } from "react-icons/fa";
 import { MdOutlineAlternateEmail } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
 const Signup = () => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [passwordType, setPasswordType] = useState(true);
   const [input, setInput] = useState({
     userName: "",
@@ -29,6 +30,7 @@ const Signup = () => {
         input
       );
       if (res.status === 201) {
+        navigate("/login");
         toast.success(res.data.message);
         setInput({
           userName: "",

@@ -9,7 +9,7 @@ import { GrLinkPrevious } from "react-icons/gr";
 import { Textarea } from "./ui/textarea";
 import axios from "axios";
 
-const DragDropUpload = () => {
+const DragDropUpload = ({ setOpen }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState("");
   const [showCaptionInput, setShowCaptionInput] = useState(false);
@@ -23,7 +23,7 @@ const DragDropUpload = () => {
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: "image/*",
+    accept: "image/jpeg",
   });
 
   const handleImageRemove = () => {
@@ -56,9 +56,7 @@ const DragDropUpload = () => {
           withCredentials: true,
         }
       );
-      console.log(res);
-      console.log("Image Posted:", selectedImage);
-      console.log("Caption:", caption);
+      setOpen(false);
       handleImageRemove();
     } catch (error) {
       console.error("Error posting the image:", error);

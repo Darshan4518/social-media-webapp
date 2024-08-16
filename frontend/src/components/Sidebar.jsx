@@ -50,7 +50,7 @@ const Sidebar = () => {
           {sidebarItems.map(({ name, Icon }) => (
             <li key={name}>
               <div
-                className="flex items-center rounded-lg px-4 py-3 space-x-3 text-sm font-medium text-gray-700 hover:bg-slate-100"
+                className="flex items-center rounded-lg px-4 py-3 space-x-3 text-sm font-medium text-gray-700 hover:bg-slate-100 cursor-pointer"
                 onClick={() => pageType(name.toLowerCase())}
               >
                 <Icon size={28} sx={{ fontSize: 28 }} />

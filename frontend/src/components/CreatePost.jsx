@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import DragDropUpload from "./DragAndDrop";
-import { CssBaseline, Container, Typography } from "@mui/material";
+import { CssBaseline, Container } from "@mui/material";
 
 const CreatePost = ({ open, setOpen }) => {
   return (
@@ -14,7 +14,7 @@ const CreatePost = ({ open, setOpen }) => {
           <div className="bg-gray-100  p-3">
             <CssBaseline />
             <Container>
-              <DragDropUpload />
+              <DragDropUpload setOpen={setOpen} />
             </Container>
           </div>
         </DialogContent>

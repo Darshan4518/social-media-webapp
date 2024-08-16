@@ -46,26 +46,6 @@ export const uploadPost = async (req, res) => {
   }
 };
 
-const handlePostClick = async () => {
-  const formData = new FormData();
-  formData.append("file", selectedImage); // 'file' must match the name used in Multer's `upload.single('file')`
-  formData.append("caption", caption);
-
-  try {
-    const res = await axios.post(
-      "http://localhost:5000/api/v1/upload-post",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    console.log(res.data);
-  } catch (error) {
-    console.error("Error uploading post:", error);
-  }
-};
 export const getAllPost = async (req, res) => {
   try {
     const posts = await Post.find()
@@ -76,7 +56,7 @@ export const getAllPost = async (req, res) => {
         sort: { createdAt: -1 },
         populate: { path: "author", select: "profilePicture , userName" },
       });
-    return res.status(201).json({ message: "recive all post", posts });
+    return res.status(201).json({ message: "recived all post", posts });
   } catch (error) {
     console.log(error);
   }
@@ -104,7 +84,7 @@ export const likePost = async (req, res) => {
     const postId = req.params.id;
     const post = await Post.findById(postId);
 
-    await post.updateOne({ $addToSet: { like: likedUserId } });
+    await post.updateOne({ $addToSet: { likes: likedUserId } });
     await post.save();
     return res.status(201).json({ message: "liked post" });
   } catch (error) {
@@ -119,7 +99,7 @@ export const disLikePost = async (req, res) => {
 
     const post = await Post.findById(postId);
 
-    await post.updateOne({ $pull: { like: disLikedUserId } });
+    await post.updateOne({ $pull: { likes: disLikedUserId } });
     await post.save();
     return res.status(201).json({ message: "disLiked post" });
   } catch (error) {
@@ -128,7 +108,7 @@ export const disLikePost = async (req, res) => {
 };
 export const commentPost = async (req, res) => {
   try {
-    const commenteddUserId = req.id;
+    const commentedUserId = req.id;
     const postId = req.params.id;
     const post = await Post.findById(postId);
 
@@ -136,9 +116,11 @@ export const commentPost = async (req, res) => {
     if (!text) return res.status(404).json({ message: "invalid text" });
     const comment = await Comment.create({
       text,
-      author: commenteddUserId,
+      author: commentedUserId,
       post: postId,
-    }).populate({
+    });
+
+    await comment.populate({
       path: "author",
       select: "profilePicture , userName",
     });

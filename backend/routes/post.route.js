@@ -22,9 +22,9 @@ router.route("/all").get(isAuthonticated, getAllPost);
 router.route("/userpost/all").post(isAuthonticated, getUserPost);
 router.route("/:id/like").get(isAuthonticated, likePost);
 router.route("/:id/dislike").get(isAuthonticated, disLikePost);
-router.route("/:id/commnent").post(isAuthonticated, commentPost);
-router.route("/:id/commnents").get(isAuthonticated, getCommentOfPost);
-router.route("/delete/:id").post(isAuthonticated, deletePost);
+router.route("/:id/comment").post(isAuthonticated, commentPost);
+router.route("/:id/comments").get(isAuthonticated, getCommentOfPost);
+router.route("/delete/:id").delete(isAuthonticated, deletePost);
 router.route("/:id/bookmark").post(isAuthonticated, bookmarkPost);
 
 export default router;
