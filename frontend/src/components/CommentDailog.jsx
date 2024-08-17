@@ -73,7 +73,10 @@ const CommentDialog = ({
               {post?.comments?.length > 0 ? (
                 post?.comments?.map((comment) => {
                   return (
-                    <div className="flex gap-x-2 items-center my-2">
+                    <div
+                      className="flex gap-x-2 items-center my-2"
+                      key={comment?.author?._id}
+                    >
                       <Avatar className="w-[35px] h-[35px]">
                         <AvatarImage src={comment?.author?.profilePicture} />
                         <AvatarFallback>

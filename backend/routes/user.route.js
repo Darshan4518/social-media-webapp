@@ -20,7 +20,7 @@ router.route("/:id/profile").get(isAuthonticated, getProfile);
 router
   .route("/profile/edit")
   .post(isAuthonticated, upload.single("profilePicture"), editProfile);
-router.route("/suggestedUsers").get(isAuthonticated, getSuggestedUsers);
+router.route("/suggestedusers").get(isAuthonticated, getSuggestedUsers);
 router.route("/followorunfollow/:id").post(isAuthonticated, followOrUnfollow);
 
 export default router;
