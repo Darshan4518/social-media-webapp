@@ -6,7 +6,7 @@ import SlowMotionVideoOutlinedIcon from "@mui/icons-material/SlowMotionVideoOutl
 import { PiMessengerLogoLight } from "react-icons/pi";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import AddBoxOutlinedIcon from "@mui/icons-material/AddBoxOutlined";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import instaLogo from "../assets/instagramlogo.png";
 import { FaInstagram } from "react-icons/fa";
@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import CreatePost from "./CreatePost";
 const Sidebar = () => {
+  const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
   const [openCreatePost, setOpenCreatePost] = useState(false);
   const sidebarItems = [
@@ -29,6 +30,9 @@ const Sidebar = () => {
   const pageType = (type) => {
     if (type === "create") {
       setOpenCreatePost(true);
+    }
+    if (type === "home") {
+      navigate("/");
     }
   };
 
@@ -62,7 +66,7 @@ const Sidebar = () => {
           ))}
           <li className="rounded-lg px-3 text-sm font-medium text-gray-700">
             <Link
-              to="/profile"
+              to={`/profile/${user?._id}`}
               className="flex items-center gap-3 bg-white p-2 hover:bg-gray-50"
             >
               <Avatar className="w-[35px]">

@@ -19,7 +19,7 @@ router.route("/logout").post(logout);
 router.route("/:id/profile").get(isAuthonticated, getProfile);
 router
   .route("/profile/edit")
-  .post(isAuthonticated, upload.single("profilePicture"), editProfile);
+  .put(isAuthonticated, upload.single("profilePicture"), editProfile);
 router.route("/suggestedusers").get(isAuthonticated, getSuggestedUsers);
 router.route("/followorunfollow/:id").post(isAuthonticated, followOrUnfollow);
 

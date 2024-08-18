@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setSuggestedUsers } from "@/redux/authSlice";
 import { ScrollArea } from "./ui/scroll-area";
+import { Link } from "react-router-dom";
 
 const SuggestedUsers = () => {
   const dispatch = useDispatch();
@@ -18,8 +19,6 @@ const SuggestedUsers = () => {
         );
         if (res.status === 200) {
           dispatch(setSuggestedUsers(res.data.users));
-
-          console.log(res.data.users);
         }
       } catch (error) {
         console.log(error);
@@ -39,15 +38,14 @@ const SuggestedUsers = () => {
             </AvatarFallback>
           </Avatar>
           <div className="">
-            <p className="text-sm md:text-sm lg:text-[12px]  font-bold capitalize">
+            <p className="text-sm md:text-sm lg:text-[14px]  font-bold capitalize">
               {user?.userName}
-            </p>
-            <p className="text-sm md:text-sm lg:text-[12px]  font-bold capitalize">
-              {user?.bio || "bio here..."}
             </p>
           </div>
         </div>
-        <p className=" text-blue-500">Switch</p>
+        <Link to={"/login"}>
+          <p className=" text-blue-500">Switch</p>
+        </Link>
       </div>
       <div>
         <div className=" flex  items-center justify-between  gap-x-2 text-sm  mt-8">
@@ -66,11 +64,8 @@ const SuggestedUsers = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="">
-                    <p className="text-sm md:text-sm lg:text-[12px]  font-bold capitalize">
+                    <p className="text-sm md:text-sm lg:text-[14px]  font-bold capitalize">
                       {user?.userName}
-                    </p>
-                    <p className="text-sm md:text-sm lg:text-[12px]  font-bold capitalize">
-                      {user?.bio || "bio here..."}
                     </p>
                   </div>
                 </div>

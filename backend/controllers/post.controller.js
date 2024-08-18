@@ -50,11 +50,11 @@ export const getAllPost = async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "profilePicture , userName" })
+      .populate({ path: "author", select: "profilePicture  userName" })
       .populate({
         path: "comments",
         sort: { createdAt: -1 },
-        populate: { path: "author", select: "profilePicture , userName" },
+        populate: { path: "author", select: "profilePicture  userName" },
       });
     return res.status(201).json({ message: "recived all post", posts });
   } catch (error) {
@@ -66,11 +66,11 @@ export const getUserPost = async (req, res) => {
     const authorId = req.id;
     const posts = await Post.find({ author: authorId })
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "profilePicture , userName" })
+      .populate({ path: "author", select: "profilePicture  userName" })
       .populate({
         path: "comments",
         sort: { createdAt: -1 },
-        populate: { path: "author", select: "profilePicture , userName" },
+        populate: { path: "author", select: "profilePicture  userName" },
       });
     return res.status(201).json({ message: "recive all post", posts });
   } catch (error) {
@@ -122,7 +122,7 @@ export const commentPost = async (req, res) => {
 
     await comment.populate({
       path: "author",
-      select: "profilePicture , userName",
+      select: "profilePicture  userName",
     });
 
     await post.comments.push(comment._id);
@@ -139,7 +139,7 @@ export const getCommentOfPost = async (req, res) => {
     const postId = req.params.id;
     const comments = await Comment.find({ post: postId })
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "profilePicture , userName" });
+      .populate({ path: "author", select: "profilePicture  userName" });
     if (!comments)
       return res
         .status(404)
