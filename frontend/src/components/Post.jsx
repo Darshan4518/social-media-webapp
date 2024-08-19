@@ -87,7 +87,7 @@ const Post = ({ post }) => {
     <div className="space-y-4 w-full max-w-lg mx-auto my-6 px-4 md:px-6 lg:px-8">
       <div className="flex gap-x-3 items-center justify-between">
         <div className="flex gap-x-2 items-center">
-          <Avatar className="w-[35px]">
+          <Avatar>
             <AvatarImage src={post?.author?.profilePicture} />
             <AvatarFallback>
               {post?.author?.userName?.slice(0, 2)?.toUpperCase()}
@@ -131,7 +131,7 @@ const Post = ({ post }) => {
         <img
           src={post?.image}
           alt="post"
-          className="w-full max-h-[500px] object-contain"
+          className="w-full lg:max-h-[500px] max-h-[300px] object-contain"
         />
       </div>
       <div className="flex items-center justify-between px-3">

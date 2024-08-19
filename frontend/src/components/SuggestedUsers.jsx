@@ -54,7 +54,10 @@ const SuggestedUsers = () => {
         </div>
         {suggestedUsers?.map((user) => {
           return (
-            <ScrollArea className=" space-y-4  max-h-screen">
+            <ScrollArea
+              className=" space-y-4  max-h-screen"
+              key={user?.userName}
+            >
               <div className=" flex items-center justify-between gap-x-2">
                 <div className="flex gap-x-2 items-center">
                   <Avatar className="w-[40px]">

@@ -3,6 +3,7 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/posts.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
+import { getReceiverSocketId, io } from "../socket/socketIo.js";
 export const uploadPost = async (req, res) => {
   try {
     const { caption } = req.body;
@@ -86,6 +87,24 @@ export const likePost = async (req, res) => {
 
     await post.updateOne({ $addToSet: { likes: likedUserId } });
     await post.save();
+
+    const user = await User.findById(likedUserId).select(
+      "userName profilePicture"
+    );
+
+    const postOwerId = post?.author?.toString();
+
+    if (postOwerId !== likedUserId) {
+      const notification = {
+        type: "like",
+        userId: likedUserId,
+        userDetails: user,
+        postId,
+      };
+      const postOwerSocketId = getReceiverSocketId(postOwerId);
+      io.to(postOwerSocketId).emit("notification", notification);
+    }
+
     return res.status(201).json({ message: "liked post" });
   } catch (error) {
     console.log(error);
@@ -101,6 +120,22 @@ export const disLikePost = async (req, res) => {
 
     await post.updateOne({ $pull: { likes: disLikedUserId } });
     await post.save();
+    const user = await User.findById(disLikedUserId).select(
+      "userName profilePicture"
+    );
+
+    const postOwerId = post?.author?._id.toString();
+
+    if (postOwerId !== disLikedUserId) {
+      const notification = {
+        type: "dislike",
+        userId: disLikedUserId,
+        userDetails: user,
+        postId,
+      };
+      const postOwerSocketId = getReceiverSocketId(postOwerId);
+      io.to(postOwerSocketId).emit("notification", notification);
+    }
     return res.status(201).json({ message: "disLiked post" });
   } catch (error) {
     console.log(error);

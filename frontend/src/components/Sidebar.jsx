@@ -34,6 +34,9 @@ const Sidebar = () => {
     if (type === "home") {
       navigate("/");
     }
+    if (type === "messages") {
+      navigate("/chat");
+    }
   };
 
   return (
@@ -69,7 +72,7 @@ const Sidebar = () => {
               to={`/profile/${user?._id}`}
               className="flex items-center gap-3 bg-white p-2 hover:bg-gray-50"
             >
-              <Avatar className="w-[35px]">
+              <Avatar className="w-[35px] h-[35px]">
                 <AvatarImage src={user?.profilePicture} />
                 <AvatarFallback>
                   {user?.userName?.slice(0, 2)?.toUpperCase()}

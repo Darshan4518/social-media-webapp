@@ -2,15 +2,16 @@ import express, { urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./utils/db.js";
-import { configDotenv } from "dotenv";
+import { config } from "dotenv"; // Corrected import
 import userRoute from "./routes/user.route.js";
 import postRoute from "./routes/post.route.js";
 import messageRoute from "./routes/message.route.js";
-const app = express();
+import { app, server } from "./socket/socketIo.js";
 
-// middleware
+// Load environment variables
+config();
 
-configDotenv();
+// Middleware setup
 app.use(express.json());
 app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
@@ -20,10 +21,22 @@ app.use(
     credentials: true,
   })
 );
+
+// Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/message", messageRoute);
+
+// Connect to the database
 connectDB();
-app.listen(5000, () => {
-  console.log("server connected");
+
+// Start the server
+server.listen(5000, () => {
+  console.log("Server is listening on port 5000");
+});
+
+// Basic error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
 });

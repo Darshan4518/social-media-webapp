@@ -11,7 +11,6 @@ import { setAuthUser, setUseProfile } from "@/redux/authSlice";
 
 const EditProfile = () => {
   const { user } = useSelector((store) => store.auth);
-  const { userProfile } = useSelector((store) => store.auth);
 
   const dispatch = useDispatch();
   const [selectedFile, setSelectedFile] = useState(null);
@@ -35,7 +34,12 @@ const EditProfile = () => {
       const res = await axios.put(
         "http://localhost:5000/api/v1/user/profile/edit",
         updatedUser,
-        { withCredentials: true }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
       );
       dispatch(setAuthUser({ ...user, ...res.data.user }));
 

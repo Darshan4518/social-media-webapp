@@ -7,7 +7,7 @@ const MainLayout = ({ children }) => {
       <aside className="w-[20%] md:w-[15%] lg:w-[15%] hidden sm:block">
         <Sidebar />
       </aside>
-      <main className="w-full sm:w-[80%] md:w-[85%] lg:w-[85%] p-4">
+      <main className="w-full sm:w-[80%] md:w-[85%] lg:w-[85%]">
         {children}
       </main>
     </div>
