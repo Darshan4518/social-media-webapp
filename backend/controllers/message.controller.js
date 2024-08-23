@@ -15,6 +15,7 @@ export const sendMessage = async (req, res) => {
         participants: [senderId, receiverId],
       });
     }
+
     const newMessage = await Message.create({
       senderId,
       receiverId,
@@ -29,7 +30,7 @@ export const sendMessage = async (req, res) => {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, newMessage });
   } catch (error) {
     console.log(error);
   }
@@ -45,11 +46,54 @@ export const getMessages = async (req, res) => {
     if (!conversation) {
       return res.status(200).json({ success: true, messages: [] });
     }
-
     return res
       .status(200)
       .json({ success: true, messages: conversation?.messages });
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.id;
+
+    const message = await Message.findById(messageId);
+
+    if (
+      !message ||
+      (message.senderId.toString() !== userId &&
+        message.receiverId.toString() !== userId)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to delete this message",
+      });
+    }
+
+    await Conversation.updateOne(
+      { messages: messageId },
+      { $pull: { messages: messageId } }
+    );
+
+    await message.deleteOne();
+
+    const receiverSocketId = getReceiverSocketId(message.receiverId);
+    const senderSocketId = getReceiverSocketId(message.senderId);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("deleteMessage", messageId);
+    }
+    if (senderSocketId && senderSocketId !== receiverSocketId) {
+      io.to(senderSocketId).emit("deleteMessage", messageId);
+    }
+
+    return res.status(200).json({ success: true, message: "Message deleted" });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to delete message" });
   }
 };

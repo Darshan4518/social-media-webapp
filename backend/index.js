@@ -2,14 +2,14 @@ import express, { urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./utils/db.js";
-import { config } from "dotenv"; // Corrected import
+import { config } from "dotenv";
 import userRoute from "./routes/user.route.js";
 import postRoute from "./routes/post.route.js";
 import messageRoute from "./routes/message.route.js";
 import { app, server } from "./socket/socketIo.js";
 
 // Load environment variables
-config();
+config({});
 
 // Middleware setup
 app.use(express.json());

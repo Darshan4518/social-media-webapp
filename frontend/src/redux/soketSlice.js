@@ -3,13 +3,11 @@ import { createSlice } from "@reduxjs/toolkit";
 const socketSlice = createSlice({
   name: "socket",
   initialState: {
-    isConnected: false,
-    userId: null,
+    socket: null,
   },
   reducers: {
     setSocketState: (state, action) => {
-      state.isConnected = action.payload.isConnected;
-      state.userId = action.payload.userId;
+      state.socket = action.payload;
     },
   },
 });

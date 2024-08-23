@@ -6,9 +6,15 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
+import { useSelector } from "react-redux";
 const Signup = () => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
+
+  if (user) {
+    navigate("/");
+  }
+  const [loading, setLoading] = useState(false);
   const [passwordType, setPasswordType] = useState(true);
   const [input, setInput] = useState({
     userName: "",

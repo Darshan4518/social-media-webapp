@@ -18,7 +18,6 @@ const useGetAllMessages = () => {
       );
       if (res.status == 200) {
         dispatch(setMessages(res.data.messages));
-        console.log(res.data);
       }
     } catch (error) {
       console.log(error);

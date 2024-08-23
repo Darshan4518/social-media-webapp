@@ -94,7 +94,7 @@ export const logout = (req, res) => {
   try {
     return res
       .cookie("token", "", { maxAge: 0 })
-      .json({ massage: "Logout successfully" });
+      .json({ massage: "Logout successfully", success: true });
   } catch (error) {
     console.log(error);
   }
@@ -115,6 +115,29 @@ export const getProfile = async (req, res) => {
     res.status(200).json({ user });
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const getSearchUsers = async (req, res) => {
+  try {
+    const name = req.query.name;
+
+    const users = await User.find({
+      userName: { $regex: name, $options: "i" },
+    });
+
+    if (!users || users.length === 0) {
+      return res.status(400).json({ message: "User does not exist" });
+    }
+
+    const filteredUsers = users.filter(
+      (user) => user._id.toString() !== req.id
+    );
+
+    return res.status(200).json({ success: true, users: filteredUsers });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -156,40 +179,82 @@ export const getSuggestedUsers = async (req, res) => {
 };
 
 export const followOrUnfollow = async (req, res) => {
-  const currentUserId = req.id;
-  const targetUserId = req.params.id;
-  if (currentUserId === targetUserId) {
-    return res.status(402).json({ followBtn: false });
-  }
-  const user = await User.findById(currentUserId).select("-password");
-  const targetUser = await User.findById(targetUserId);
-  if (!user || !targetUser) {
-    return res.status(402).json({ message: "user not found" });
-  }
-  const isFollowing = user.following.includes(targetUserId);
-  if (isFollowing) {
-    await Promise.all([
-      User.updateOne(
-        { _id: currentUserId },
-        { $pull: { following: targetUserId } }
-      ),
-      User.updateOne(
-        { _id: targetUserId },
-        { $pull: { followers: currentUserId } }
-      ),
+  try {
+    const currentUserId = req.id;
+    const targetUserId = req.params.id;
+
+    if (currentUserId === targetUserId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Cannot follow yourself" });
+    }
+
+    const [user, targetUser] = await Promise.all([
+      User.findById(currentUserId).select("-password"),
+      User.findById(targetUserId),
     ]);
-    return res.status(200).json({ message: "Unfllowed" });
-  } else {
-    await Promise.all([
-      User.updateOne(
-        { _id: currentUserId },
-        { $push: { following: targetUserId } }
-      ),
-      User.updateOne(
-        { _id: targetUserId },
-        { $push: { followers: currentUserId } }
-      ),
-    ]);
-    return res.status(200).json({ message: "Following" });
+
+    if (!user || !targetUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const isFollowing = user.following.includes(targetUserId);
+
+    const session = await User.startSession();
+    session.startTransaction();
+
+    try {
+      if (isFollowing) {
+        await Promise.all([
+          User.updateOne(
+            { _id: currentUserId },
+            { $pull: { following: targetUserId } },
+            { session }
+          ),
+          User.updateOne(
+            { _id: targetUserId },
+            { $pull: { followers: currentUserId } },
+            { session }
+          ),
+        ]);
+      } else {
+        // Follow the user
+        await Promise.all([
+          User.updateOne(
+            { _id: currentUserId },
+            { $push: { following: targetUserId } },
+            { session }
+          ),
+          User.updateOne(
+            { _id: targetUserId },
+            { $push: { followers: currentUserId } },
+            { session }
+          ),
+        ]);
+      }
+
+      await session.commitTransaction();
+
+      return res.status(200).json({
+        success: true,
+        action: isFollowing ? "unfollow" : "follow",
+        message: isFollowing
+          ? "Unfollowed successfully"
+          : "Followed successfully",
+      });
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
   }
 };

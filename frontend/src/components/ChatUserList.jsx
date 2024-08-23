@@ -18,7 +18,7 @@ const ChatUserList = () => {
   };
 
   return (
-    <div className="w-[25%] h-screen border-r border-gray-400 px-3 py-6">
+    <div className="w-[25%] h-screen border-r border-gray-400 px-3 py-6 hidden sm:block">
       <div className="flex items-center gap-x-4">
         <Avatar className="w-10 h-10 mx-auto md:mx-0">
           <AvatarImage src={user?.profilePicture} />

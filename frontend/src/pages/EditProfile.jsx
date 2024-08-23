@@ -53,7 +53,7 @@ const EditProfile = () => {
 
   return (
     <MainLayout className="">
-      <div className="mx-auto w-full sm:w-[90%] md:w-[80%] lg:w-[70%]">
+      <div className="mx-auto w-full sm:w-[90%] md:w-[80%] lg:w-[70%] p-3">
         <h2 className="text-2xl font-bold my-3">Edit Profile</h2>
         <div className="p-4 bg-slate-200 w-full sm:w-[90%] md:w-[80%] lg:w-[60%] flex flex-col sm:flex-row items-center justify-between rounded-2xl">
           <div className="flex items-center gap-x-4 mb-4 sm:mb-0">

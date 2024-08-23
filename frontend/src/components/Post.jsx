@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
@@ -50,6 +50,9 @@ const Post = ({ post }) => {
         { withCredentials: true }
       );
       if (res.status === 201) {
+        setLike(!like);
+        setLikeCount((prevCount) => (like ? prevCount - 1 : prevCount + 1));
+
         const updatedLikes = like
           ? post.likes.filter((id) => id !== user._id)
           : [...post.likes, user._id];
@@ -57,13 +60,12 @@ const Post = ({ post }) => {
           p._id === post._id ? { ...p, likes: updatedLikes } : p
         );
         dispatch(setPosts(updatedData));
-        setLikeCount(updatedLikes.length);
-        setLike(!like);
       }
     } catch (error) {
       console.log(error);
     }
   };
+
   const addComment = async () => {
     try {
       const res = await axios.post(
@@ -83,8 +85,9 @@ const Post = ({ post }) => {
       console.log(error);
     }
   };
+
   return (
-    <div className="space-y-4 w-full max-w-lg mx-auto my-6 px-4 md:px-6 lg:px-8">
+    <div className="space-y-4 w-full sm:max-w-lg mx-auto my-6 px-4 md:px-6 lg:px-8">
       <div className="flex gap-x-3 items-center justify-between">
         <div className="flex gap-x-2 items-center">
           <Avatar>

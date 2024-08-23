@@ -10,13 +10,45 @@ import { Link, useNavigate } from "react-router-dom";
 
 import instaLogo from "../assets/instagramlogo.png";
 import { FaInstagram } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import CreatePost from "./CreatePost";
+import { setAuthUser } from "@/redux/authSlice";
+import { setPosts } from "@/redux/postsSlice";
+import { setSelectedUser } from "@/redux/chatSlice";
+import { LogOut } from "lucide-react";
+import axios from "axios";
+import LikeNotificationBar from "./LikeNotificationBar";
+import SearchBar from "./SearchBar";
 const Sidebar = () => {
   const navigate = useNavigate();
+
+  const dispatch = useDispatch();
+  const logoutHandler = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/v1/user/logout", {
+        withCredentials: true,
+      });
+
+      if (res.data.success) {
+        dispatch(setAuthUser(null));
+        dispatch(setSelectedUser(null));
+        dispatch(setPosts([]));
+        navigate("/login");
+      } else {
+        console.error("Logout failed:", res.data.message);
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
   const { user } = useSelector((store) => store.auth);
+  const { messages } = useSelector((store) => store.chat);
+  const { likeNotify } = useSelector((store) => store.rtmLikeNotify);
   const [openCreatePost, setOpenCreatePost] = useState(false);
+  const [openLikeSheet, setOpenLikeSheet] = useState(false);
+  const [openSearchSheet, setOpenSearchSheet] = useState(false);
+
   const sidebarItems = [
     { name: "Home", Icon: HomeOutlinedIcon },
     { name: "Search", Icon: SearchOutlinedIcon },
@@ -37,30 +69,43 @@ const Sidebar = () => {
     if (type === "messages") {
       navigate("/chat");
     }
+    if (type === "favorites") {
+      setOpenLikeSheet(true);
+    }
+    if (type === "search") {
+      setOpenSearchSheet(true);
+    }
   };
 
   return (
     <div className="flex h-screen flex-col justify-between border-e bg-white ">
-      <div className="px-4 py-6 fixed top-2">
-        <span className="lg:grid h-10 w-32 hidden  place-content-center ">
+      <div className="px-4 py-6  fixed top-2">
+        <div className="lg:grid h-10 w-32 hidden  place-content-center ">
           <img
             src={instaLogo}
             alt="logo"
             className="h-full w-full object-cover"
           />
-        </span>
+        </div>
         <span className="grid h-10 px-4 mx-auto lg:hidden   ">
           <FaInstagram size={28} />
         </span>
 
         <ul className="mt-6 space-y-3">
           {sidebarItems.map(({ name, Icon }) => (
-            <li key={name}>
+            <li key={name} className="relative">
               <div
                 className="flex items-center rounded-lg px-4 py-3 space-x-3 text-sm font-medium text-gray-700 hover:bg-slate-100 cursor-pointer"
                 onClick={() => pageType(name.toLowerCase())}
               >
-                <Icon size={28} sx={{ fontSize: 28 }} />
+                <div className="relative">
+                  <Icon size={28} sx={{ fontSize: 28 }} />
+                  {name === "Favorites" && likeNotify?.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center text-xs font-bold text-white bg-red-500 rounded-full">
+                      {likeNotify?.length}
+                    </span>
+                  )}
+                </div>
                 <span className="capitalize text-[1.1rem] hidden lg:block">
                   {name}
                 </span>
@@ -84,9 +129,20 @@ const Sidebar = () => {
               </p>
             </Link>
           </li>
+          <li
+            className="flex items-center rounded-lg px-4 py-3 space-x-3 text-sm font-medium text-gray-700 hover:bg-slate-100 cursor-pointer"
+            onClick={logoutHandler}
+          >
+            <LogOut />
+            <span className="capitalize text-[1.1rem] hidden lg:block">
+              Logout
+            </span>
+          </li>
         </ul>
         <CreatePost open={openCreatePost} setOpen={setOpenCreatePost} />
       </div>
+      <LikeNotificationBar open={openLikeSheet} setOpen={setOpenLikeSheet} />
+      <SearchBar open={openSearchSheet} setOpen={setOpenSearchSheet} />
     </div>
   );
 };

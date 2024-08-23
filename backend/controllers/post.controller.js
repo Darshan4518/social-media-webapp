@@ -49,33 +49,75 @@ export const uploadPost = async (req, res) => {
 
 export const getAllPost = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page
+    const skip = (page - 1) * limit; // Calculate how many posts to skip
+
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "profilePicture  userName" })
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: "author", select: "profilePicture userName" })
       .populate({
         path: "comments",
         sort: { createdAt: -1 },
-        populate: { path: "author", select: "profilePicture  userName" },
+        populate: { path: "author", select: "profilePicture userName" },
       });
-    return res.status(201).json({ message: "recived all post", posts });
+
+    const totalPosts = await Post.countDocuments(); // Total number of posts in the collection
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    return res.status(200).json({
+      message: "Received all posts",
+      posts,
+      pagination: {
+        totalPosts,
+        totalPages,
+        currentPage: page,
+        postsPerPage: limit,
+      },
+    });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const getUserPost = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
     const authorId = req.id;
+
     const posts = await Post.find({ author: authorId })
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "profilePicture  userName" })
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: "author", select: "profilePicture userName" })
       .populate({
         path: "comments",
         sort: { createdAt: -1 },
-        populate: { path: "author", select: "profilePicture  userName" },
+        populate: { path: "author", select: "profilePicture userName" },
       });
-    return res.status(201).json({ message: "recive all post", posts });
+
+    const totalPosts = await Post.countDocuments({ author: authorId }); // Total number of posts for the user
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    return res.status(200).json({
+      message: "Received user posts",
+      posts,
+      pagination: {
+        totalPosts,
+        totalPages,
+        currentPage: page,
+        postsPerPage: limit,
+      },
+    });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -100,6 +142,7 @@ export const likePost = async (req, res) => {
         userId: likedUserId,
         userDetails: user,
         postId,
+        post,
       };
       const postOwerSocketId = getReceiverSocketId(postOwerId);
       io.to(postOwerSocketId).emit("notification", notification);
@@ -193,17 +236,11 @@ export const deletePost = async (req, res) => {
     if (post.author.toString() !== authorId)
       return res.status(401).json({ message: "unAuthorized user" });
 
-    // post delete
-
     await Post.findByIdAndDelete(postId);
-
-    // remove post from user
 
     let user = await User.findById(authorId);
     user.posts = user.posts.filter((id) => id.toString() !== postId);
     await user.save();
-
-    // delete associated comments from post
 
     await Comment.deleteMany({ post: postId });
 

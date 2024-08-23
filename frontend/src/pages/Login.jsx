@@ -6,14 +6,19 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
+
+  if (user) {
+    navigate("/");
+  }
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [passwordType, setPasswordType] = useState(true);
-  const navigate = useNavigate();
   const [input, setInput] = useState({
     email: "",
     password: "",

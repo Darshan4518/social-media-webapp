@@ -14,6 +14,7 @@ import storage from "redux-persist/lib/storage";
 import postsSlice from "./postsSlice";
 import chatSlice from "./chatSlice";
 import socketSlice from "./soketSlice";
+import rtmLikeSlice from "./rtmLikeSlice";
 const persistConfig = {
   key: "root",
   version: 1,
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   posts: postsSlice,
   chat: chatSlice,
   socket: socketSlice,
+  rtmLikeNotify: rtmLikeSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

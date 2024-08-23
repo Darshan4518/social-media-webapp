@@ -3,6 +3,7 @@ import {
   editProfile,
   followOrUnfollow,
   getProfile,
+  getSearchUsers,
   getSuggestedUsers,
   login,
   logout,
@@ -15,12 +16,13 @@ const router = express.Router();
 
 router.route("/register").post(register);
 router.route("/login").post(login);
-router.route("/logout").post(logout);
+router.route("/logout").get(logout);
 router.route("/:id/profile").get(isAuthonticated, getProfile);
 router
   .route("/profile/edit")
   .put(isAuthonticated, upload.single("profilePicture"), editProfile);
 router.route("/suggestedusers").get(isAuthonticated, getSuggestedUsers);
 router.route("/followorunfollow/:id").post(isAuthonticated, followOrUnfollow);
+router.route("/getsearchusers").get(isAuthonticated, getSearchUsers);
 
 export default router;

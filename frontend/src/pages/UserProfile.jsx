@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useGetUserProfile from "@/hooks/useGetUserProfile";
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "./MainLayout";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,62 @@ import { LuGrid } from "react-icons/lu";
 import { GoVideo } from "react-icons/go";
 import { FaBookmark } from "react-icons/fa";
 import CircularProgress from "@mui/material/CircularProgress";
+import axios from "axios";
+import {
+  followFailure,
+  followSuccess,
+  unfollowSuccess,
+  followRequest,
+} from "@/redux/authSlice";
 
 const UserProfile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const dispatch = useDispatch();
   const { loading } = useGetUserProfile(id);
 
   const { userProfile, user } = useSelector((store) => store.auth);
   const [activeTab, setActiveTab] = useState("post");
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 
-  const isLoginedUser = user?._id === userProfile?._id;
+  const isLoggedUser = user?._id === userProfile?._id;
+
+  useEffect(() => {
+    setIsFollowing(userProfile?.followers?.includes(user?._id) || false);
+    setFollowerCount(userProfile?.followers?.length || 0);
+  }, [userProfile, user]);
+
+  const followOrUnfollowUser = async () => {
+    if (isRequestInProgress) return;
+    setIsRequestInProgress(true);
+    dispatch(followRequest());
+
+    try {
+      const res = await axios.post(
+        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      const { action, user: updatedUser } = res.data;
+
+      if (action === "follow") {
+        setIsFollowing(true);
+        setFollowerCount((prev) => prev + 1);
+        dispatch(followSuccess(updatedUser));
+      } else if (action === "unfollow") {
+        setIsFollowing(false);
+        setFollowerCount((prev) => prev - 1);
+        dispatch(unfollowSuccess(updatedUser));
+      }
+    } catch (error) {
+      dispatch(followFailure(error.message));
+    } finally {
+      setIsRequestInProgress(false);
+    }
+  };
 
   return (
     <MainLayout>
@@ -40,21 +86,27 @@ const UserProfile = () => {
               <div className="mt-4 md:mt-0">
                 <div className="flex flex-col md:flex-row gap-x-3 md:items-center">
                   <div className="flex gap-x-2 items-center">
-                    <p className="text-lg md:text-2xl capitalize ">
+                    <p className="text-lg md:text-2xl capitalize">
                       {userProfile?.userName}
                     </p>
-                    {isLoginedUser ? (
+                    {!isLoggedUser ? (
                       <Button
                         variant="ghost"
-                        className="bg-blue-500 mx-4 md:hidden hover:bg-blue-300"
+                        className={`${
+                          isFollowing
+                            ? "bg-gray-400 hover:bg-gray-300"
+                            : "bg-blue-500 hover:bg-blue-300"
+                        } mx-4 md:hidden`}
+                        onClick={followOrUnfollowUser}
+                        disabled={isRequestInProgress}
                       >
-                        Follow
+                        {isFollowing ? "Unfollow" : "Follow"}
                       </Button>
                     ) : (
                       <Settings size={20} className="md:hidden" />
                     )}
                   </div>
-                  {isLoginedUser ? (
+                  {isLoggedUser ? (
                     <div className="flex gap-x-3 items-center">
                       <Button
                         variant="ghost"
@@ -74,15 +126,21 @@ const UserProfile = () => {
                   ) : (
                     <Button
                       variant="ghost"
-                      className="bg-blue-500 mx-4 hidden md:block hover:bg-blue-300 w-[100px]"
+                      className={`${
+                        isFollowing
+                          ? "bg-gray-400 hover:bg-gray-300"
+                          : "bg-blue-500 hover:bg-blue-300"
+                      } mx-4 hidden md:block w-[100px]`}
+                      onClick={followOrUnfollowUser}
+                      disabled={isRequestInProgress}
                     >
-                      Follow
+                      {isFollowing ? "Unfollow" : "Follow"}
                     </Button>
                   )}
                 </div>
                 <div className="hidden md:flex flex-row items-center my-3 gap-x-5">
                   <h2>{userProfile?.posts?.length} posts</h2>
-                  <h2>{userProfile?.followers?.length} followers</h2>
+                  <h2>{followerCount} followers</h2>
                   <h2>{userProfile?.following?.length} following</h2>
                 </div>
                 <p className="max-w-[250px] my-3 text-[12px] sm:text-base">
@@ -92,7 +150,7 @@ const UserProfile = () => {
             </div>
             <div className="flex md:hidden items-center justify-evenly text-lg gap-x-5 my-4">
               <h2>{userProfile?.posts?.length} posts</h2>
-              <h2>{userProfile?.followers?.length} followers</h2>
+              <h2>{followerCount} followers</h2>
               <h2>{userProfile?.following?.length} following</h2>
             </div>
             <hr />
