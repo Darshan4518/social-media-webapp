@@ -105,6 +105,7 @@ const Feeds = () => {
                   <div
                     className=" text-sm font-medium text-gray-700 hover:bg-slate-100 cursor-pointer"
                     onClick={() => pageType(name.toLowerCase())}
+                    key={name}
                   >
                     <div className="relative">
                       <Icon size={28} sx={{ fontSize: 28 }} />
@@ -135,6 +136,7 @@ const Feeds = () => {
                 <div
                   className=" text-sm font-medium text-gray-700 hover:bg-slate-100 cursor-pointer "
                   onClick={() => pageType(name.toLowerCase())}
+                  key={name}
                 >
                   <div className="relative">
                     <Icon size={28} sx={{ fontSize: 28 }} />
