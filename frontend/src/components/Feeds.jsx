@@ -33,7 +33,7 @@ const Feeds = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/v1/post/all?page=${page}&limit=${limit}`,
+        `https://instagram-olwk.onrender.com/api/v1/post/all?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
         }

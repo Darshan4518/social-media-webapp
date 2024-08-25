@@ -26,9 +26,12 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const logoutHandler = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/user/logout", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        "https://instagram-olwk.onrender.com/api/v1/user/logout",
+        {
+          withCredentials: true,
+        }
+      );
 
       if (res.data.success) {
         dispatch(setAuthUser(null));
