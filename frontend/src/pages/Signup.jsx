@@ -32,7 +32,7 @@ const Signup = () => {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/api/v1/user/register",
+        "https://instagram-olwk.onrender.com/api/v1/user/register",
         input
       );
       if (res.status === 201) {

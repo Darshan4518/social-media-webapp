@@ -1,1 +1,1 @@
-export const backend_Uri = "http://localhost:5000/api/v1";
+export const backend_Uri = "https://instagram-olwk.onrender.com/api/v1";

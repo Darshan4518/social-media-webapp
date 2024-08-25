@@ -11,7 +11,7 @@ const useGetUserProfile = (userId) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/v1/user/${userId}/profile`,
+        `https://instagram-olwk.onrender.com/api/v1/user/${userId}/profile`,
         { withCredentials: true }
       );
       if (res.status === 200) {
