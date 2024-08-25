@@ -102,7 +102,7 @@ export const getUserPost = async (req, res) => {
         populate: { path: "author", select: "profilePicture userName" },
       });
 
-    const totalPosts = await Post.countDocuments({ author: authorId }); // Total number of posts for the user
+    const totalPosts = await Post.countDocuments({ author: authorId });
     const totalPages = Math.ceil(totalPosts / limit);
 
     return res.status(200).json({

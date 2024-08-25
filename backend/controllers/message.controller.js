@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
 import { getReceiverSocketId, io } from "../socket/socketIo.js";
@@ -7,6 +8,17 @@ export const sendMessage = async (req, res) => {
     const senderId = req.id;
     const receiverId = req.params.id;
     const { message } = req.body;
+    if (!senderId || !receiverId) {
+      return res.status(400).json({ success: false, message: "Invalid IDs" });
+    }
+    if (
+      !mongoose.isValidObjectId(senderId) ||
+      !mongoose.isValidObjectId(receiverId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ObjectId" });
+    }
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
@@ -57,6 +69,8 @@ export const getMessages = async (req, res) => {
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
+    console.log(messageId);
+
     const userId = req.id;
 
     const message = await Message.findById(messageId);

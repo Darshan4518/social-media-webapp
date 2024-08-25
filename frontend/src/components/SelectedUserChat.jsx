@@ -43,7 +43,7 @@ const SelectedUserChat = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/message/send/${selectedUser?._id}`,
+        `http://localhost:5000/api/v1/message/send/${selectedUser?._id}`,
         { message },
         {
           headers: {
@@ -65,7 +65,7 @@ const SelectedUserChat = () => {
 
   const handleLongPress = (message) => {
     if (message.senderId === user?._id) {
-      setSelectedMessageId(message._id);
+      setSelectedMessageId(message?._id);
       setDialogOpen(true);
     }
   };
@@ -78,12 +78,12 @@ const SelectedUserChat = () => {
   const deleteMessage = async () => {
     try {
       const res = await axios.delete(
-        `https://instagram-olwk.onrender.com/api/v1/message/delete/${selectedMessageId}`,
+        `http://localhost:5000/api/v1/message/delete/${selectedMessageId}`,
         { withCredentials: true }
       );
       if (res.data.success) {
         dispatch(
-          setMessages(messages.filter((msg) => msg._id !== selectedMessageId))
+          setMessages(messages.filter((msg) => msg?._id !== selectedMessageId))
         );
         handleClose();
       }

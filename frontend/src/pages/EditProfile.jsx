@@ -32,7 +32,7 @@ const EditProfile = () => {
 
     try {
       const res = await axios.put(
-        "https://instagram-olwk.onrender.com/api/v1/user/profile/edit",
+        "http://localhost:5000/api/v1/user/profile/edit",
         updatedUser,
         {
           headers: {

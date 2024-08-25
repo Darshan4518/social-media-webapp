@@ -73,11 +73,9 @@ export const login = async (req, res) => {
       posts: populatePosts,
     };
 
-    const token = await jwt.sign(
-      { userId: user._id },
-      "jfdkusdhlfiuserytghfiurehg",
-      { expiresIn: "1d" }
-    );
+    const token = await jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
     return res
       .cookie("token", token, {
         httpOnly: true,

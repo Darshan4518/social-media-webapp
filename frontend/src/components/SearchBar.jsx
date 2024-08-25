@@ -11,18 +11,25 @@ const SearchBar = ({ open, setOpen }) => {
   const dispatch = useDispatch();
   const searchResults = useSelector((state) => state.auth.searchUser);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState(" user not found");
 
   const getSearchUsers = async () => {
     try {
       const res = await axios.get(
-        `https://instagram-olwk.onrender.com/api/v1/user/getsearchusers?name=${search}`,
+        `http://localhost:5000/api/v1/user/getsearchusers?name=${search}`,
         { withCredentials: true }
       );
-      if (res.data.success) {
+
+      if (search == "") {
+        dispatch(setSearchUser([]));
+      }
+
+      if (res.data.success && search !== "") {
         dispatch(setSearchUser(res.data.users));
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      setError(err.response.data.message);
+      dispatch(setSearchUser([]));
     }
   };
 
@@ -68,7 +75,7 @@ const SearchBar = ({ open, setOpen }) => {
               </Link>
             ))
           ) : (
-            <p className="text-gray-500">No users found</p>
+            <p className="text-gray-500">{error}</p>
           )}
         </ScrollArea>
       </SheetContent>

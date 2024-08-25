@@ -19,7 +19,7 @@ const SuggestedUsers = () => {
     const fetchuggestedUsers = async () => {
       try {
         const res = await axios.get(
-          "https://instagram-olwk.onrender.com/api/v1/user/suggestedusers",
+          "http://localhost:5000/api/v1/user/suggestedusers",
           { withCredentials: true }
         );
         if (res.status === 200) {
@@ -46,7 +46,7 @@ const SuggestedUsers = () => {
 
     try {
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/user/followorunfollow/${id}`,
+        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
         {},
         { withCredentials: true }
       );

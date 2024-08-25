@@ -44,7 +44,7 @@ const UserProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/user/followorunfollow/${id}`,
+        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
         {},
         { withCredentials: true }
       );

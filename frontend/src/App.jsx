@@ -20,7 +20,7 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      const socketio = io("https://instagram-olwk.onrender.com", {
+      const socketio = io("http://localhost:5000", {
         query: {
           userId: user?._id,
         },

@@ -10,7 +10,7 @@ const useSocket = () => {
 
   useEffect(() => {
     if (user) {
-      const socketIo = io("https://instagram-olwk.onrender.com", {
+      const socketIo = io("http://localhost:5000", {
         query: { userId: user._id },
         transports: ["websocket"],
       });

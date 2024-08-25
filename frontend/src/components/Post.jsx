@@ -30,7 +30,7 @@ const Post = ({ post }) => {
   const deletePost = async () => {
     try {
       const res = await axios.delete(
-        `https://instagram-olwk.onrender.com/api/v1/post/delete/${post._id}`,
+        `http://localhost:5000/api/v1/post/delete/${post._id}`,
         { withCredentials: true }
       );
       if (res.status === 201) {
@@ -46,7 +46,7 @@ const Post = ({ post }) => {
     try {
       const action = like ? "dislike" : "like";
       const res = await axios.get(
-        `https://instagram-olwk.onrender.com/api/v1/post/${post._id}/${action}`,
+        `http://localhost:5000/api/v1/post/${post._id}/${action}`,
         { withCredentials: true }
       );
       if (res.status === 201) {
@@ -69,7 +69,7 @@ const Post = ({ post }) => {
   const addComment = async () => {
     try {
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/post/${post._id}/comment`,
+        `http://localhost:5000/api/v1/post/${post._id}/comment`,
         { text },
         { withCredentials: true }
       );
