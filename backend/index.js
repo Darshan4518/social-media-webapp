@@ -33,7 +33,7 @@ app.use("/api/v1/message", messageRoute);
 connectDB();
 
 // Start the server
-server.listen(5000, () => {
+server.listen(process.env.PORT || 5000, () => {
   console.log("Server is listening on port 5000");
 });
 // Basic error handling middleware
