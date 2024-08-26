@@ -8,12 +8,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["POST", "GET"],
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
 });
-
 const userSocketMap = {};
 
 export const getReceiverSocketId = (receiverId) => {
