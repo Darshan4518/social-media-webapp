@@ -11,8 +11,8 @@ const useSocket = () => {
   useEffect(() => {
     if (user) {
       const socketIo = io("https://instagram-olwk.onrender.com", {
+        transports: ["websocket", "polling"],
         query: { userId: user._id },
-        transports: ["websocket"],
       });
 
       dispatch(setSocket(socketIo));
