@@ -28,7 +28,7 @@ const SearchBar = ({ open, setOpen }) => {
         dispatch(setSearchUser(res.data.users));
       }
     } catch (err) {
-      setError(err.response.data.message);
+      setError(err.response?.data?.message);
       dispatch(setSearchUser([]));
     }
   };
