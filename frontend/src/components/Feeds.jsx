@@ -59,7 +59,7 @@ const Feeds = () => {
 
   useEffect(() => {
     getPosts(currentPage);
-  }, [currentPage]);
+  }, [currentPage, dispatch]);
 
   const sidebarItemsTop = [
     { name: "Create", Icon: AddBoxOutlinedIcon },
