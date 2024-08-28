@@ -1,16 +1,9 @@
 import jwt from "jsonwebtoken";
 export const isAuthonticated = async (req, res, next) => {
   try {
-    // for react-native
-    const authHeader = req.headers?.authorization;
+    const token = req.cookies?.token;
 
-    if (!authHeader) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
-
-    // websites
-
-    const token = req.cookies?.token || authHeader.split(" ")[1];
+    console.log(token);
 
     if (!token) {
       return res.status(401).json({ message: "user not authonticated" });

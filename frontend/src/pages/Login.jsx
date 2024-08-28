@@ -40,7 +40,7 @@ const Login = () => {
           withCredentials: true,
         }
       );
-      if (res.status === 200) {
+      if (res.data.success) {
         navigate("/");
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);

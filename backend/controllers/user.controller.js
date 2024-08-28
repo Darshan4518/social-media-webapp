@@ -61,6 +61,18 @@ export const login = async (req, res) => {
       }),
     ]);
 
+    user = {
+      _id: user._id,
+      userName: user.userName,
+      email: user.email,
+      password: user.password,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+      followers: user.followers,
+      following: user.following,
+      posts: populatePosts,
+    };
+
     const token = await jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
@@ -71,22 +83,7 @@ export const login = async (req, res) => {
         secure: process.env.NODE_ENV === "production" || "",
         maxAge: 1 * 24 * 60 * 60 * 1000,
       })
-      .json({
-        message: "Logined successfully",
-        user: {
-          _id: user._id,
-          userName: user.userName,
-          email: user.email,
-          password: user.password,
-          profilePicture: user.profilePicture,
-          bio: user.bio,
-          followers: user.followers,
-          following: user.following,
-          posts: populatePosts,
-        },
-        token,
-        success: true,
-      });
+      .json({ message: "Logined successfully", user, success: true });
   } catch (error) {
     console.log(error);
   }
