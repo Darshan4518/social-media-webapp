@@ -212,6 +212,40 @@ export const commentPost = async (req, res) => {
   }
 };
 
+// controllers/commentController.js
+
+export const deleteComment = async (req, res) => {
+  try {
+    const commentId = req.params.id;
+    const postId = req.params.postId;
+    const authorId = req.id;
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Ensure the comment belongs to the user or post author
+    if (comment.author.toString() !== authorId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Remove comment from the post
+    const post = await Post.findById(postId);
+    post.comments = post.comments.filter((c) => c.toString() !== commentId);
+    await post.save();
+
+    // Delete the comment
+    await Comment.findByIdAndDelete(commentId);
+
+    return res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getCommentOfPost = async (req, res) => {
   try {
     const postId = req.params.id;
