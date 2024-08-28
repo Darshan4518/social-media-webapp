@@ -212,12 +212,9 @@ export const commentPost = async (req, res) => {
   }
 };
 
-// controllers/commentController.js
-
 export const deleteComment = async (req, res) => {
   try {
-    const commentId = req.params.id;
-    const postId = req.params.postId;
+    const { postId, commentId } = req.params;
     const authorId = req.id;
 
     const comment = await Comment.findById(commentId);
@@ -226,7 +223,6 @@ export const deleteComment = async (req, res) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Ensure the comment belongs to the user or post author
     if (comment.author.toString() !== authorId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
