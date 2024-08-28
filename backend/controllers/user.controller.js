@@ -83,7 +83,7 @@ export const login = async (req, res) => {
         secure: process.env.NODE_ENV === "production" || "",
         maxAge: 1 * 24 * 60 * 60 * 1000,
       })
-      .json({ message: "Logined successfully", user, success: true });
+      .json({ message: "Logined successfully", user, success: true, token });
   } catch (error) {
     console.log(error);
   }
