@@ -3,6 +3,7 @@ import { isAuthonticated } from "../middlewares/isAuthonticated.js";
 import {
   bookmarkPost,
   commentPost,
+  deleteComment,
   deletePost,
   disLikePost,
   getAllPost,
@@ -23,6 +24,8 @@ router.route("/userpost/all").post(isAuthonticated, getUserPost);
 router.route("/:id/like").get(isAuthonticated, likePost);
 router.route("/:id/dislike").get(isAuthonticated, disLikePost);
 router.route("/:id/comment").post(isAuthonticated, commentPost);
+router.route("/:id/comment/:id").delete(isAuthonticated, deleteComment);
+
 router.route("/:id/comments").get(isAuthonticated, getCommentOfPost);
 router.route("/delete/:id").delete(isAuthonticated, deletePost);
 router.route("/:id/bookmark").post(isAuthonticated, bookmarkPost);
