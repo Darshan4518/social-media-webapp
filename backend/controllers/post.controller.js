@@ -218,21 +218,22 @@ export const deleteComment = async (req, res) => {
     const authorId = req.id;
 
     const comment = await Comment.findById(commentId);
-
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
+    // Check if the user is the author of the comment
     if (comment.author.toString() !== authorId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Remove comment from the post
-    const post = await Post.findById(postId);
-    post.comments = post.comments.filter((c) => c.toString() !== commentId);
-    await post.save();
+    await Post.findByIdAndUpdate(
+      postId,
+      { $pull: { comments: commentId } },
+      { new: true }
+    );
 
-    // Delete the comment
+    // Delete the comment itself
     await Comment.findByIdAndDelete(commentId);
 
     return res.status(200).json({ message: "Comment deleted successfully" });
