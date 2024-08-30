@@ -177,78 +177,69 @@ export const getSuggestedUsers = async (req, res) => {
   return res.status(200).json({ users: suggestedUsers });
 };
 
+import User from "../models/User";
+
 export const followOrUnfollow = async (req, res) => {
   try {
     const currentUserId = req.id;
     const targetUserId = req.params.id;
 
     if (currentUserId === targetUserId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Cannot follow yourself" });
-    }
-
-    const [user, targetUser] = await Promise.all([
-      User.findById(currentUserId).select("-password"),
-      User.findById(targetUserId),
-    ]);
-
-    if (!user || !targetUser) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    const isFollowing = user.following.includes(targetUserId);
-
-    const session = await User.startSession();
-    session.startTransaction();
-
-    try {
-      if (isFollowing) {
-        await Promise.all([
-          User.updateOne(
-            { _id: currentUserId },
-            { $pull: { following: targetUserId } },
-            { session }
-          ),
-          User.updateOne(
-            { _id: targetUserId },
-            { $pull: { followers: currentUserId } },
-            { session }
-          ),
-        ]);
-      } else {
-        // Follow the user
-        await Promise.all([
-          User.updateOne(
-            { _id: currentUserId },
-            { $push: { following: targetUserId } },
-            { session }
-          ),
-          User.updateOne(
-            { _id: targetUserId },
-            { $push: { followers: currentUserId } },
-            { session }
-          ),
-        ]);
-      }
-
-      await session.commitTransaction();
-
-      return res.status(200).json({
-        success: true,
-        action: isFollowing ? "unfollow" : "follow",
-        message: isFollowing
-          ? "Unfollowed successfully"
-          : "Followed successfully",
+      return res.status(400).json({
+        success: false,
+        message: "Cannot follow yourself",
       });
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
     }
+
+    const currentUser = await User.findById(currentUserId).select("-password");
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isFollowing = currentUser?.following?.includes(targetUserId);
+
+    if (isFollowing) {
+      await Promise.all([
+        User.updateOne(
+          { _id: currentUserId },
+          { $pull: { following: targetUserId } },
+          { session }
+        ),
+        User.updateOne(
+          { _id: targetUserId },
+          { $pull: { followers: currentUserId } },
+          { session }
+        ),
+      ]);
+    } else {
+      await Promise.all([
+        User.updateOne(
+          { _id: currentUserId },
+          { $push: { following: targetUserId } },
+          { session }
+        ),
+        User.updateOne(
+          { _id: targetUserId },
+          { $push: { followers: currentUserId } },
+          { session }
+        ),
+      ]);
+    }
+
+    await Promise.all([currentUser.save(), targetUser.save()]);
+
+    return res.status(200).json({
+      success: true,
+      action: isFollowing ? "unfollow" : "follow",
+      message: isFollowing
+        ? "Unfollowed successfully"
+        : "Followed successfully",
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,

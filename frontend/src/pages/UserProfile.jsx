@@ -62,6 +62,7 @@ const UserProfile = () => {
       }
     } catch (error) {
       dispatch(followFailure(error.message));
+      console.log(error);
     } finally {
       setIsRequestInProgress(false);
     }
