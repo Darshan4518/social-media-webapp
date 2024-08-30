@@ -29,6 +29,7 @@ const SuggestedUsers = () => {
         console.log(error);
       }
     };
+
     fetchuggestedUsers();
   }, []);
 

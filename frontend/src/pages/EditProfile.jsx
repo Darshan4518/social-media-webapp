@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { MenuItem, TextField } from "@mui/material";
-import { setAuthUser, setUseProfile } from "@/redux/authSlice";
+import { setAuthUser } from "@/redux/authSlice";
 
 const EditProfile = () => {
   const { user } = useSelector((store) => store.auth);
@@ -41,9 +41,10 @@ const EditProfile = () => {
           withCredentials: true,
         }
       );
-      dispatch(setAuthUser({ ...user, ...res.data.user }));
-
-      console.log("Profile updated successfully");
+      if (res.status === 200) {
+        dispatch(setAuthUser({ ...user, ...res.data.user }));
+        console.log("Profile updated successfully");
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
     }

@@ -13,6 +13,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
 const userSocketMap = {};
 
 export const getReceiverSocketId = (receiverId) => {
@@ -23,14 +24,18 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
 
   if (userId) {
-    userSocketMap[userId] = socket.id;
-    console.log("User connected: userId=", userId, "socketId=", socket.id);
+    if (!userSocketMap[userId]) {
+      userSocketMap[userId] = socket.id;
+      console.log("User connected: userId=", userId, "socketId=", socket.id);
 
-    io.emit("getOnlineUser", Object.keys(userSocketMap));
+      io.emit("getOnlineUser", Object.keys(userSocketMap));
+    } else {
+      console.log("User already connected: userId=", userId);
+    }
   }
 
   socket.on("disconnect", () => {
-    if (userId) {
+    if (userId && userSocketMap[userId] === socket.id) {
       console.log("User disconnected: userId=", userId, "socketId=", socket.id);
       delete userSocketMap[userId];
 

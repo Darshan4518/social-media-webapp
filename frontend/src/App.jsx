@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -15,34 +15,43 @@ import { setLikeNotify } from "./redux/rtmLikeSlice";
 function App() {
   const { user } = useSelector((store) => store.auth);
   const { socket } = useSelector((store) => store.socket);
-
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (user) {
+      // Initialize socket connection
       const socketio = io("https://instagram-olwk.onrender.com", {
-        query: {
-          userId: user?._id,
-        },
+        query: { userId: user._id },
         transports: ["websocket"],
       });
+
+      // Dispatch socket state
       dispatch(setSocketState(socketio));
 
-      socketio.on("getOnlineUser", (onlineUser) => {
+      // Event listeners
+      const handleGetOnlineUser = (onlineUser) => {
         dispatch(setOnlineUsers(onlineUser));
-      });
-      socketio.on("notification", (notification) => {
+      };
+      const handleNotification = (notification) => {
         dispatch(setLikeNotify(notification));
-      });
+      };
+
+      socketio.on("getOnlineUser", handleGetOnlineUser);
+      socketio.on("notification", handleNotification);
+
+      // Cleanup function
       return () => {
+        socketio.off("getOnlineUser", handleGetOnlineUser);
+        socketio.off("notification", handleNotification);
         socketio.close();
         dispatch(setSocketState(null));
       };
     } else {
+      // Close socket and cleanup if user logs out or becomes null
       socket?.close();
       dispatch(setSocketState(null));
     }
-  }, [user, dispatch]);
+  }, [user, dispatch, socket]);
 
   return (
     <BrowserRouter>
