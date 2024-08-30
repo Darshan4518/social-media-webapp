@@ -177,8 +177,6 @@ export const getSuggestedUsers = async (req, res) => {
   return res.status(200).json({ users: suggestedUsers });
 };
 
-import User from "../models/User";
-
 export const followOrUnfollow = async (req, res) => {
   try {
     const currentUserId = req.id;
