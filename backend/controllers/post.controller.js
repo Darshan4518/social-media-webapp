@@ -243,6 +243,7 @@ export const commentPost = async (req, res) => {
     await post.comments.push(comment._id);
     await post.save();
 
+    // Invalidate cache
     await redisClient.del(`post:${postId}`);
 
     return res.status(201).json({ message: "Comment added", comment });

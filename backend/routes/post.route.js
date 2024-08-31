@@ -1,7 +1,7 @@
 import express from "express";
 import { isAuthonticated } from "../middlewares/isAuthonticated.js";
 import {
-  bookmarkPost,
+  // bookmarkPost,
   commentPost,
   deleteComment,
   deletePost,
@@ -27,6 +27,6 @@ router
   .route("/:postId/comment/:commentId")
   .delete(isAuthonticated, deleteComment);
 router.route("/delete/:id").delete(isAuthonticated, deletePost);
-router.route("/:id/bookmark").post(isAuthonticated, bookmarkPost);
+// router.route("/:id/bookmark").post(isAuthonticated, bookmarkPost);
 
 export default router;
