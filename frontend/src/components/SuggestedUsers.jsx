@@ -13,8 +13,9 @@ import { Link } from "react-router-dom";
 
 const SuggestedUsers = () => {
   const dispatch = useDispatch();
-  const { user, userProfile } = useSelector((store) => store.auth);
-  const { suggestedUsers } = useSelector((store) => store.auth);
+  const { user, userProfile, suggestedUsers } = useSelector(
+    (store) => store.auth
+  );
   useEffect(() => {
     const fetchuggestedUsers = async () => {
       try {

@@ -234,7 +234,7 @@ const SelectedUserChat = () => {
             {suggestedUsers?.map((suggestedUser) => {
               const isOnline = onlineUsers.includes(suggestedUser?._id);
               return (
-                <div>
+                <div key={suggestedUser?._id}>
                   <div
                     key={suggestedUser?._id}
                     className={`flex items-center gap-x-4 ${

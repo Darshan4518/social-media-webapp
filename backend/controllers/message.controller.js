@@ -1,13 +1,11 @@
-import mongoose from "mongoose";
-import { Conversation } from "../models/conversation.model.js";
-import { Message } from "../models/message.model.js";
-import { getReceiverSocketId, io } from "../socket/socketIo.js";
+import redisClient from "../utils/redisClient.js";
 
 export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
     const { message } = req.body;
+
     if (!senderId || !receiverId) {
       return res.status(400).json({ success: false, message: "Invalid IDs" });
     }
@@ -19,9 +17,11 @@ export const sendMessage = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid ObjectId" });
     }
+
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
+
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [senderId, receiverId],
@@ -33,9 +33,19 @@ export const sendMessage = async (req, res) => {
       receiverId,
       message,
     });
+
     if (newMessage) conversation.messages.push(newMessage._id);
 
     await Promise.all([conversation.save(), newMessage.save()]);
+
+    // Cache the new message
+    await redisClient.set(
+      `message:${newMessage._id}`,
+      JSON.stringify(newMessage),
+      {
+        EX: 3600, // Cache expires in 1 hour
+      }
+    );
 
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
@@ -45,6 +55,9 @@ export const sendMessage = async (req, res) => {
     return res.status(200).json({ success: true, newMessage });
   } catch (error) {
     console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to send message" });
   }
 };
 
@@ -52,25 +65,42 @@ export const getMessages = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
+    const redisKey = `conversation:${senderId}:${receiverId}`;
+
+    // Check cache first
+    const cachedMessages = await redisClient.get(redisKey);
+    if (cachedMessages) {
+      return res
+        .status(200)
+        .json({ success: true, messages: JSON.parse(cachedMessages) });
+    }
+
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     }).populate("messages");
+
     if (!conversation) {
       return res.status(200).json({ success: true, messages: [] });
     }
+
+    // Cache the messages
+    await redisClient.set(redisKey, JSON.stringify(conversation.messages), {
+      EX: 3600, // Cache expires in 1 hour
+    });
+
     return res
       .status(200)
-      .json({ success: true, messages: conversation?.messages });
+      .json({ success: true, messages: conversation.messages });
   } catch (error) {
     console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to get messages" });
   }
 };
-
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    console.log(messageId);
-
     const userId = req.id;
 
     const message = await Message.findById(messageId);
@@ -92,6 +122,9 @@ export const deleteMessage = async (req, res) => {
     );
 
     await message.deleteOne();
+
+    // Invalidate cache
+    await redisClient.del(`message:${messageId}`);
 
     const receiverSocketId = getReceiverSocketId(message.receiverId);
     const senderSocketId = getReceiverSocketId(message.senderId);

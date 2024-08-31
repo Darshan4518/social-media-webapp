@@ -28,11 +28,19 @@ const authSlice = createSlice({
       const targetUser = action.payload;
       state.isLoading = false;
 
-      if (!state.user.following.includes(targetUser._id)) {
+      if (
+        state.user &&
+        targetUser &&
+        !state.user.following.includes(targetUser._id)
+      ) {
         state.user.following.push(targetUser._id);
       }
 
-      if (state.userProfile._id === targetUser._id) {
+      if (
+        state.userProfile &&
+        targetUser &&
+        state.userProfile._id === targetUser._id
+      ) {
         state.userProfile.followers.push(state.user._id);
       }
     },
@@ -40,11 +48,17 @@ const authSlice = createSlice({
       const targetUser = action.payload;
       state.isLoading = false;
 
-      state.user.following = state.user.following.filter(
-        (id) => id !== targetUser._id
-      );
+      if (state.user && targetUser) {
+        state.user.following = state.user.following.filter(
+          (id) => id !== targetUser._id
+        );
+      }
 
-      if (state.userProfile._id === targetUser._id) {
+      if (
+        state.userProfile &&
+        targetUser &&
+        state.userProfile._id === targetUser._id
+      ) {
         state.userProfile.followers = state.userProfile.followers.filter(
           (id) => id !== state.user._id
         );
