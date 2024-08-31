@@ -175,7 +175,6 @@ export const likePost = async (req, res) => {
       io.to(postOwerSocketId).emit("notification", notification);
     }
 
-    // Invalidate cache
     await redisClient.del(`posts:all`);
     await redisClient.del(`user:${postOwerId}:posts:page:1`);
 
@@ -212,7 +211,6 @@ export const disLikePost = async (req, res) => {
       io.to(postOwerSocketId).emit("notification", notification);
     }
 
-    // Invalidate cache
     await redisClient.del(`posts:all`);
     await redisClient.del(`user:${postOwerId}:posts:page:1`);
 
@@ -269,7 +267,6 @@ export const deleteComment = async (req, res) => {
     await Post.findByIdAndUpdate(postId, { $pull: { comments: commentId } });
     await Comment.findByIdAndDelete(commentId);
 
-    // Invalidate cache
     await redisClient.del(`post:${postId}`);
 
     return res.status(200).json({ message: "Comment deleted successfully" });
@@ -295,7 +292,6 @@ export const deletePost = async (req, res) => {
 
     await Comment.deleteMany({ post: postId });
 
-    // Invalidate caches
     await redisClient.del(`posts:all`);
     await redisClient.del(`user:${authorId}:posts:page:1`);
     await redisClient.del(`post:${postId}`);
@@ -318,22 +314,20 @@ export const bookmarkPost = async (req, res) => {
       await user.updateOne({ $pull: { bookmarks: post._id } });
       await user.save();
 
-      // Invalidate cache
       await redisClient.del(`user:${author}:bookmarks`);
 
       return res
         .status(200)
-        .json({ type: "unsaved", message: "Bookmark removed" });
+        .json({ type: "unsaved", message: "Bookmark removed", post });
     } else {
       await user.updateOne({ $addToSet: { bookmarks: post._id } });
       await user.save();
 
-      // Invalidate cache
       await redisClient.del(`user:${author}:bookmarks`);
 
       return res
         .status(200)
-        .json({ type: "saved", message: "Post bookmarked successfully" });
+        .json({ type: "saved", message: "Post bookmarked successfully", post });
     }
   } catch (error) {
     console.log(error);
