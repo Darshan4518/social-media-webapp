@@ -4,6 +4,7 @@ import { Post } from "../models/posts.model.js";
 import { User } from "../models/user.model.js";
 import redisClient from "../utils/redisClient.js";
 import { getReceiverSocketId, io } from "../socket/socketIo.js";
+import { Comment } from "../models/comment.model.js";
 
 export const uploadPost = async (req, res) => {
   try {
@@ -242,7 +243,6 @@ export const commentPost = async (req, res) => {
     await post.comments.push(comment._id);
     await post.save();
 
-    // Invalidate cache
     await redisClient.del(`post:${postId}`);
 
     return res.status(201).json({ message: "Comment added", comment });
