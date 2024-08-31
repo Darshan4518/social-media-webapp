@@ -1,4 +1,6 @@
+// redisClient.js
 import { createClient } from "redis";
+
 const redisClient = createClient({
   password: "pbNM472fAPdVnf6GcgA3HQN4W9XEPWjR",
   socket: {
@@ -19,5 +21,4 @@ redisClient
   .catch((err) => {
     console.error("Redis connection error:", err);
   });
-
-module.exports = redisClient;
+export default redisClient;

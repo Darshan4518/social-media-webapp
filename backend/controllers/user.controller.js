@@ -1,3 +1,11 @@
+import { User } from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import getDataUri from "../utils/dataUriParser.js";
+import cloudinary from "../utils/cloudinary.js";
+import { Post } from "../models/posts.model.js";
+import redisClient from "../utils/redisClient.js";
+
 export const register = async (req, res) => {
   try {
     const { userName, email, password } = req.body;
@@ -23,7 +31,6 @@ export const register = async (req, res) => {
       password: hashPassword,
     });
 
-    // Invalidate cache
     await redisClient.del("users:suggested");
     await redisClient.del(`user:${email}`);
 
@@ -50,12 +57,10 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Password does not match" });
     }
 
-    // Check if user is cached
     const cachedUser = await redisClient.get(`user:${email}`);
     if (cachedUser) {
       user = JSON.parse(cachedUser);
     } else {
-      // Populate the user posts
       const populatePosts = await Promise.all(
         user?.posts?.map(async (postId) => {
           const post = await Post.findById(postId);
@@ -175,7 +180,6 @@ export const editProfile = async (req, res) => {
 
     await user.save();
 
-    // Invalidate cache
     await redisClient.del(`user:${userId}`);
     await redisClient.del(`user:${user.email}`);
 
@@ -275,5 +279,15 @@ export const followOrUnfollow = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const logout = (req, res) => {
+  try {
+    return res
+      .cookie("token", "", { maxAge: 0 })
+      .json({ massage: "Logout successfully", success: true });
+  } catch (error) {
+    console.log(error);
   }
 };

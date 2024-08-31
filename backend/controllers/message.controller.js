@@ -1,3 +1,5 @@
+import { Conversation } from "../models/conversation.model.js";
+import { Message } from "../models/message.model.js";
 import redisClient from "../utils/redisClient.js";
 
 export const sendMessage = async (req, res) => {
@@ -38,12 +40,11 @@ export const sendMessage = async (req, res) => {
 
     await Promise.all([conversation.save(), newMessage.save()]);
 
-    // Cache the new message
     await redisClient.set(
       `message:${newMessage._id}`,
       JSON.stringify(newMessage),
       {
-        EX: 3600, // Cache expires in 1 hour
+        EX: 3600,
       }
     );
 
@@ -67,7 +68,6 @@ export const getMessages = async (req, res) => {
     const receiverId = req.params.id;
     const redisKey = `conversation:${senderId}:${receiverId}`;
 
-    // Check cache first
     const cachedMessages = await redisClient.get(redisKey);
     if (cachedMessages) {
       return res
@@ -83,9 +83,8 @@ export const getMessages = async (req, res) => {
       return res.status(200).json({ success: true, messages: [] });
     }
 
-    // Cache the messages
     await redisClient.set(redisKey, JSON.stringify(conversation.messages), {
-      EX: 3600, // Cache expires in 1 hour
+      EX: 3600,
     });
 
     return res
@@ -123,7 +122,6 @@ export const deleteMessage = async (req, res) => {
 
     await message.deleteOne();
 
-    // Invalidate cache
     await redisClient.del(`message:${messageId}`);
 
     const receiverSocketId = getReceiverSocketId(message.receiverId);
@@ -138,7 +136,6 @@ export const deleteMessage = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Message deleted" });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ success: false, error: "Failed to delete message" });

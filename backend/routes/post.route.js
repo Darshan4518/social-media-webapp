@@ -7,7 +7,6 @@ import {
   deletePost,
   disLikePost,
   getAllPost,
-  getCommentOfPost,
   getUserPost,
   likePost,
   uploadPost,
@@ -27,7 +26,6 @@ router.route("/:id/comment").post(isAuthonticated, commentPost);
 router
   .route("/:postId/comment/:commentId")
   .delete(isAuthonticated, deleteComment);
-router.route("/:id/comments").get(isAuthonticated, getCommentOfPost);
 router.route("/delete/:id").delete(isAuthonticated, deletePost);
 router.route("/:id/bookmark").post(isAuthonticated, bookmarkPost);
 
