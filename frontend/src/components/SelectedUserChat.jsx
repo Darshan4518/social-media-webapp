@@ -43,7 +43,7 @@ const SelectedUserChat = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/message/send/${selectedUser?._id}`,
+        `http://localhost:5000/api/v1/message/send/${selectedUser?._id}`,
         { message },
         {
           headers: {
@@ -78,7 +78,7 @@ const SelectedUserChat = () => {
   const deleteMessage = async () => {
     try {
       const res = await axios.delete(
-        `https://instagram-olwk.onrender.com/api/v1/message/delete/${selectedMessageId}`,
+        `http://localhost:5000/api/v1/message/delete/${selectedMessageId}`,
         { withCredentials: true }
       );
       if (res.data.success) {

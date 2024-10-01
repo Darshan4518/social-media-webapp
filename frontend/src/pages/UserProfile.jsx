@@ -1,15 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import useGetUserProfile from "@/hooks/useGetUserProfile";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "./MainLayout";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Loader, Settings } from "lucide-react";
 import { LuGrid } from "react-icons/lu";
 import { GoVideo } from "react-icons/go";
 import { FaBookmark } from "react-icons/fa";
-import CircularProgress from "@mui/material/CircularProgress";
 import axios from "axios";
 import {
   followFailure,
@@ -17,24 +15,39 @@ import {
   unfollowSuccess,
   followRequest,
 } from "@/redux/authSlice";
+import { useQuery } from "@tanstack/react-query";
 
 const UserProfile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { loading } = useGetUserProfile(id);
-
-  const { userProfile, user } = useSelector((store) => store.auth);
+  const { user } = useSelector((store) => store.auth);
   const [activeTab, setActiveTab] = useState("post");
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 
+  const fetchUserProfile = async () => {
+    const res = await axios.get(
+      `http://localhost:5000/api/v1/user/${id}/profile`,
+      { withCredentials: true }
+    );
+    return res.data.user;
+  };
+
+  const { isPending, data: userProfile } = useQuery({
+    queryKey: ["userProfile", id],
+    queryFn: fetchUserProfile,
+    staleTime: 60000,
+  });
+
   const isLoggedUser = user?._id === userProfile?._id;
 
   useEffect(() => {
-    setIsFollowing(userProfile?.followers?.includes(user?._id) || false);
-    setFollowerCount(userProfile?.followers?.length || 0);
+    if (userProfile) {
+      setIsFollowing(userProfile.followers?.includes(user?._id) || false);
+      setFollowerCount(userProfile.followers?.length || 0);
+    }
   }, [userProfile, user]);
 
   const followOrUnfollowUser = async () => {
@@ -44,7 +57,7 @@ const UserProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/user/followorunfollow/${id}`,
+        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
         {},
         { withCredentials: true }
       );
@@ -62,7 +75,6 @@ const UserProfile = () => {
       }
     } catch (error) {
       dispatch(followFailure(error.message));
-      console.log(error);
     } finally {
       setIsRequestInProgress(false);
     }
@@ -71,9 +83,9 @@ const UserProfile = () => {
   return (
     <MainLayout>
       <div className="flex flex-col items-center mx-auto w-full mt-7 gap-3 px-4 sm:px-6 lg:px-8">
-        {loading ? (
+        {isPending ? (
           <div className="flex justify-center items-center h-screen">
-            <CircularProgress />
+            <Loader className=" animate-spin size-12" />
           </div>
         ) : (
           <div className="w-full max-w-4xl">
@@ -177,12 +189,12 @@ const UserProfile = () => {
                   userProfile?.posts?.map((post, index) => (
                     <div
                       key={index}
-                      className="lg:max-w-[300px] lg:max-h-[300px] max-w-[200px] max-h-[200px]"
+                      className="lg:max-w-[300px] lg:max-h-[300px] max-w-[200px] max-h-[300px] h-60"
                     >
                       <img
                         src={post.image}
                         alt="post"
-                        className="w-full h-full object-cover rounded-sm"
+                        className="w-full h-full object-fill rounded-sm"
                       />
                     </div>
                   ))}

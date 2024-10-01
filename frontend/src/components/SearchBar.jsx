@@ -4,42 +4,34 @@ import { ScrollArea } from "./ui/scroll-area";
 import { useDispatch, useSelector } from "react-redux";
 import { Input } from "./ui/input";
 import axios from "axios";
-import { X } from "lucide-react";
+import { Loader, X } from "lucide-react";
 import { setSearchUser } from "@/redux/authSlice";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+
 const SearchBar = ({ open, setOpen }) => {
-  const dispatch = useDispatch();
-  const searchResults = useSelector((state) => state.auth.searchUser);
   const [search, setSearch] = useState("");
-  const [error, setError] = useState(" user not found");
 
   const getSearchUsers = async () => {
-    try {
+    if (search.trim()) {
       const res = await axios.get(
-        `https://instagram-olwk.onrender.com/api/v1/user/getsearchusers?name=${search}`,
+        `http://localhost:5000/api/v1/user/getsearchusers?name=${search}`,
         { withCredentials: true }
       );
-
-      if (search == "") {
-        dispatch(setSearchUser([]));
-      }
-
-      if (res.data.success && search !== "") {
-        dispatch(setSearchUser(res.data.users));
-      }
-    } catch (err) {
-      setError(err.response?.data?.message);
-      dispatch(setSearchUser([]));
+      return res.data.users;
     }
+    return [];
   };
 
-  useEffect(() => {
-    getSearchUsers();
-  }, [search]);
+  const { isLoading, data: searchResults } = useQuery({
+    queryKey: ["getSearchUsers", search],
+    queryFn: getSearchUsers,
+    enabled: !!search,
+  });
 
   const handleClose = () => {
     setOpen(false);
-    dispatch(setSearchUser([]));
+    setSearch("");
   };
 
   return (
@@ -54,30 +46,36 @@ const SearchBar = ({ open, setOpen }) => {
         <div className="my-3">
           <Input
             placeholder="Search users..."
-            className=""
+            value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <ScrollArea className="my-3">
-          {searchResults?.length > 0 ? (
-            searchResults?.map((user) => (
-              <Link
-                to={`/profile/${user?._id}`}
-                key={user._id}
-                className="flex items-center gap-4 p-2"
-              >
-                <img
-                  src={user?.profilePicture}
-                  alt={user?.userName}
-                  className="w-10 h-10 rounded-full"
-                />
-                <span className="font-medium">{user?.userName}</span>
-              </Link>
-            ))
-          ) : (
-            <p className="text-gray-500">{error}</p>
-          )}
-        </ScrollArea>
+        {isLoading ? (
+          <div className="h-full w-full flex items-center justify-center">
+            <Loader className="animate-spin size-10" />
+          </div>
+        ) : (
+          <ScrollArea className="my-3">
+            {searchResults?.length > 0 ? (
+              searchResults?.map((user) => (
+                <Link
+                  to={`/profile/${user?._id}`}
+                  key={user._id}
+                  className="flex items-center gap-4 p-2"
+                >
+                  <img
+                    src={user?.profilePicture}
+                    alt={user?.userName}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <span className="font-medium">{user?.userName}</span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-gray-500">User not found...</p>
+            )}
+          </ScrollArea>
+        )}
       </SheetContent>
     </Sheet>
   );

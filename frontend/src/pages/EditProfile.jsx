@@ -8,12 +8,15 @@ import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { MenuItem, TextField } from "@mui/material";
 import { setAuthUser } from "@/redux/authSlice";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const EditProfile = () => {
   const { user } = useSelector((store) => store.auth);
-
   const dispatch = useDispatch();
+
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loader, setLoader] = useState(false);
   const [bio, setBio] = useState(user?.bio || "");
   const [gender, setGender] = useState(user?.gender || "");
 
@@ -21,19 +24,25 @@ const EditProfile = () => {
     setSelectedFile(acceptedFiles[0]);
   }, []);
 
-  const handleSubmit = async () => {
-    if (!selectedFile) return user.profilePicture;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     const updatedUser = {
       bio,
       gender,
-      profilePicture: selectedFile,
+      ...(selectedFile && { profilePicture: selectedFile }),
     };
 
     try {
+      setLoader(true);
+      const formData = new FormData();
+      Object.entries(updatedUser).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
       const res = await axios.put(
-        "https://instagram-olwk.onrender.com/api/v1/user/profile/edit",
-        updatedUser,
+        "http://localhost:5000/api/v1/user/profile/edit",
+        formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -42,19 +51,25 @@ const EditProfile = () => {
         }
       );
       if (res.status === 200) {
-        dispatch(setAuthUser({ ...user, ...res.data.user }));
-        console.log("Profile updated successfully");
+        dispatch(setAuthUser(res.data.user));
+        toast.success("Profile updated successfully");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast.error("Error updating profile");
+    } finally {
+      setLoader(false);
     }
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
-    <MainLayout className="">
-      <div className="mx-auto w-full sm:w-[90%] md:w-[80%] lg:w-[70%] p-3">
+    <MainLayout>
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto w-full sm:w-[90%] md:w-[80%] lg:w-[70%] p-3"
+      >
         <h2 className="text-2xl font-bold my-3">Edit Profile</h2>
         <div className="p-4 bg-slate-200 w-full sm:w-[90%] md:w-[80%] lg:w-[60%] flex flex-col sm:flex-row items-center justify-between rounded-2xl">
           <div className="flex items-center gap-x-4 mb-4 sm:mb-0">
@@ -104,11 +119,17 @@ const EditProfile = () => {
           </TextField>
         </div>
         <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] my-10">
-          <Button onClick={handleSubmit} className="float-right">
-            Submit
-          </Button>
+          {loader ? (
+            <Button type="button" disabled={loader} className="float-right">
+              <Loader2 className="animate-spin" />
+            </Button>
+          ) : (
+            <Button type="submit" className="float-right">
+              Submit
+            </Button>
+          )}
         </div>
-      </div>
+      </form>
     </MainLayout>
   );
 };

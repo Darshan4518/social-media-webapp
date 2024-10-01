@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -30,11 +31,10 @@ const Login = () => {
   const formHandler = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
     try {
-      setLoading(true);
-
       const res = await axios.post(
-        "https://instagram-olwk.onrender.com/api/v1/user/login",
+        "http://localhost:5000/api/v1/user/login",
         input,
         {
           withCredentials: true,
@@ -50,6 +50,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      setLoading(false);
       toast.error(error.response.data.message);
     } finally {
       setLoading(false);
@@ -128,12 +129,22 @@ const Login = () => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
-          >
-            Create Account
-          </button>
+          {loading ? (
+            <button
+              type="button"
+              disabled={loading}
+              className=" w-full rounded-lg flex justify-center bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
+            >
+              <Loader2 className=" animate-spin" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
+            >
+              Login
+            </button>
+          )}
 
           <p className="text-center text-sm  text-gray-500">
             Create a new account?

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -10,45 +10,35 @@ import {
 } from "@/redux/authSlice";
 import { ScrollArea } from "./ui/scroll-area";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 const SuggestedUsers = () => {
   const dispatch = useDispatch();
-  const { user, userProfile, suggestedUsers } = useSelector(
-    (store) => store.auth
-  );
-  useEffect(() => {
-    const fetchuggestedUsers = async () => {
-      try {
-        const res = await axios.get(
-          "https://instagram-olwk.onrender.com/api/v1/user/suggestedusers",
-          { withCredentials: true }
-        );
-        if (res.status === 200) {
-          dispatch(setSuggestedUsers(res.data.users));
-        }
-      } catch (error) {
-        console.log(error);
+  const { user } = useSelector((store) => store.auth);
+
+  const fetchSuggestedUsers = async () => {
+    const res = await axios.get(
+      "http://localhost:5000/api/v1/user/suggestedusers",
+      {
+        withCredentials: true,
       }
-    };
+    );
+    return res.data.users;
+  };
 
-    fetchuggestedUsers();
-  }, []);
+  const { isPending, data: suggestedUsers } = useQuery({
+    queryKey: ["suggestedUsers"],
+    queryFn: fetchSuggestedUsers,
+    staleTime: 60000,
+  });
 
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isRequestInProgress, setIsRequestInProgress] = useState(false);
-
-  useEffect(() => {
-    setIsFollowing(userProfile?.followers?.includes(user?._id) || false);
-  }, [userProfile, user]);
-
-  const followOrUnfollowUser = async (id) => {
-    if (isRequestInProgress) return;
-    setIsRequestInProgress(true);
-    dispatch(followRequest());
-
+  const followOrUnfollowUser = async (id, isFollowing) => {
     try {
+      dispatch(followRequest());
+
       const res = await axios.post(
-        `https://instagram-olwk.onrender.com/api/v1/user/followorunfollow/${id}`,
+        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
         {},
         { withCredentials: true }
       );
@@ -56,22 +46,18 @@ const SuggestedUsers = () => {
       const { action, user: updatedUser } = res.data;
 
       if (action === "follow") {
-        setIsFollowing(true);
         dispatch(followSuccess(updatedUser));
       } else if (action === "unfollow") {
-        setIsFollowing(false);
         dispatch(unfollowSuccess(updatedUser));
       }
     } catch (error) {
-      dispatch(followFailure(error.message));
-    } finally {
-      setIsRequestInProgress(false);
+      console.error(error);
     }
   };
 
   return (
-    <div className=" xl:w-[25%] md:w-[30%] hidden lg:block">
-      <div className=" flex items-center justify-between gap-x-2">
+    <div className="xl:w-[25%] md:w-[30%] hidden lg:block">
+      <div className="flex items-center justify-between gap-x-2 mb-4">
         <div className="flex gap-x-2 items-center">
           <Avatar className="w-[40px]">
             <AvatarImage src={user?.profilePicture} />
@@ -79,54 +65,67 @@ const SuggestedUsers = () => {
               {user?.userName?.slice(0, 2)?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="">
-            <p className="text-sm md:text-sm lg:text-[14px]  font-bold capitalize">
+          <div>
+            <p className="text-sm md:text-sm lg:text-[14px] font-bold capitalize">
               {user?.userName}
             </p>
           </div>
         </div>
-        <Link to={"/login"}>
-          <p className=" text-blue-500">Switch</p>
+        <Link to="/login">
+          <p className="text-blue-500">Switch</p>
         </Link>
       </div>
-      <div>
-        <div className=" flex  items-center justify-between  gap-x-2 text-sm  mt-8">
-          <p className=" font-semibold">Suggested for you</p>
-          <p className=" font-bold">See All</p>
+
+      <div className="mb-4">
+        <div className="flex items-center justify-between gap-x-2 text-sm">
+          <p className="font-semibold">Suggested for you</p>
+          <p className="font-bold cursor-pointer">See All</p>
         </div>
-        {suggestedUsers?.map((user) => {
-          return (
-            <ScrollArea
-              className=" space-y-4  max-h-screen"
-              key={user?.userName}
-            >
-              <Link to={`/profile/${user?._id}`}>
-                <div className=" flex items-center justify-between gap-x-2">
-                  <div className="flex gap-x-2 items-center">
-                    <Avatar className="w-[40px]">
-                      <AvatarImage src={user?.profilePicture} />
-                      <AvatarFallback>
-                        {user?.userName?.slice(0, 2)?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="">
-                      <p className="text-sm md:text-sm lg:text-[14px]  font-bold capitalize">
-                        {user?.userName}
-                      </p>
-                    </div>
-                  </div>
-                  <p
-                    className=" text-blue-500 cursor-pointer"
-                    onClick={() => followOrUnfollowUser(user?._id)}
-                  >
-                    {isFollowing ? "unfollow" : "follow"}
-                  </p>
-                </div>
-              </Link>
-            </ScrollArea>
-          );
-        })}
       </div>
+
+      {isPending ? (
+        <div className=" mx-auto flex justify-center h-full items-center w-full">
+          <Loader2 className=" animate-spin size-6 " />
+        </div>
+      ) : (
+        <ScrollArea className="space-y-4 max-h-screen">
+          {suggestedUsers?.map((suggestedUser) => {
+            const isFollowing = suggestedUser?.followers?.includes(user?._id);
+
+            return (
+              <div
+                className="flex items-center justify-between gap-x-2"
+                key={suggestedUser._id}
+              >
+                <Link
+                  to={`/profile/${suggestedUser._id}`}
+                  className="flex gap-x-2 items-center"
+                >
+                  <Avatar className="w-[40px]">
+                    <AvatarImage src={suggestedUser?.profilePicture} />
+                    <AvatarFallback>
+                      {suggestedUser?.userName?.slice(0, 2)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm md:text-sm lg:text-[14px] font-bold capitalize">
+                      {suggestedUser?.userName}
+                    </p>
+                  </div>
+                </Link>
+                <button
+                  className="text-blue-500 cursor-pointer"
+                  onClick={() =>
+                    followOrUnfollowUser(suggestedUser._id, isFollowing)
+                  }
+                >
+                  {isFollowing ? "Unfollow" : "Follow"}
+                </button>
+              </div>
+            );
+          })}
+        </ScrollArea>
+      )}
     </div>
   );
 };

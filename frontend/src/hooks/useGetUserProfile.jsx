@@ -6,19 +6,23 @@ import { useDispatch } from "react-redux";
 const useGetUserProfile = (userId) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchUserProfile = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await axios.get(
-        `https://instagram-olwk.onrender.com/api/v1/user/${userId}/profile`,
+        `http://localhost:5000/api/v1/user/${userId}/profile`,
         { withCredentials: true }
       );
+
       if (res.status === 200) {
         dispatch(setUseProfile(res.data.user));
       }
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
+      setError("Failed to load user profile. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -28,7 +32,7 @@ const useGetUserProfile = (userId) => {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
-  return { fetchUserProfile, loading };
+  return { fetchUserProfile, loading, error };
 };
 
 export default useGetUserProfile;

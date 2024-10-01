@@ -7,6 +7,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { Loader2 } from "lucide-react";
 const Signup = () => {
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
@@ -32,7 +33,7 @@ const Signup = () => {
       setLoading(true);
 
       const res = await axios.post(
-        "https://instagram-olwk.onrender.com/api/v1/user/register",
+        "http://localhost:5000/api/v1/user/register",
         input
       );
       if (res.status === 201) {
@@ -143,12 +144,21 @@ const Signup = () => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
-          >
-            Create Account
-          </button>
+          {loading ? (
+            <button
+              type="submit"
+              className=" w-full flex justify-center rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
+            >
+              <Loader2 className=" animate-spin" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
+            >
+              Create Account
+            </button>
+          )}
 
           <p className="text-center text-sm text-gray-500">
             Already have a account?
