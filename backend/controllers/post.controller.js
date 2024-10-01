@@ -54,10 +54,7 @@ export const uploadPost = async (req, res) => {
 };
 export const getAllPost = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-    const redisKey = `posts:page:${page}:limit:${limit}`;
+    const redisKey = "posts:all";
 
     const cachedPosts = await redisClient.get(redisKey);
     if (cachedPosts) {
@@ -69,8 +66,6 @@ export const getAllPost = async (req, res) => {
 
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
       .populate({ path: "author", select: "profilePicture userName" })
       .populate({
         path: "comments",
@@ -78,18 +73,9 @@ export const getAllPost = async (req, res) => {
         populate: { path: "author", select: "profilePicture userName" },
       });
 
-    const totalPosts = await Post.countDocuments();
-    const totalPages = Math.ceil(totalPosts / limit);
-
     const response = {
       message: "Received all posts",
       posts,
-      pagination: {
-        totalPosts,
-        totalPages,
-        currentPage: page,
-        postsPerPage: limit,
-      },
     };
 
     await redisClient.setEx(redisKey, 60, JSON.stringify(response));
@@ -100,6 +86,7 @@ export const getAllPost = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const getUserPost = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;

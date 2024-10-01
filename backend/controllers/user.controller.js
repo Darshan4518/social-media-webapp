@@ -6,6 +6,10 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/posts.model.js";
 import redisClient from "../utils/redisClient.js";
 
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const register = async (req, res) => {
   try {
     const { userName, email, password } = req.body;
@@ -44,7 +48,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(401).json({ msg: "please fill the login form" });
+      return res.status(401).json({ msg: "Please fill the login form" });
     }
 
     let user = await User.findOne({ email });
@@ -62,7 +66,7 @@ export const login = async (req, res) => {
       user = JSON.parse(cachedUser);
     } else {
       const populatePosts = await Promise.all(
-        user?.posts?.map(async (postId) => {
+        (user?.posts || []).map(async (postId) => {
           const post = await Post.findById(postId);
           if (post?.author?.equals(user._id)) {
             return post;
@@ -86,13 +90,13 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
 
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "None",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
         maxAge: 1 * 24 * 60 * 60 * 1000,
       })
@@ -102,6 +106,7 @@ export const login = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -116,8 +121,9 @@ export const getProfile = async (req, res) => {
       .populate({ path: "posts", sort: { createdAt: -1 } })
       .populate("bookmarks");
 
+    // Check if user exists
     if (!user) {
-      return res.status(400).json({ message: "User does not exist" });
+      return res.status(404).json({ message: "User does not exist" });
     }
 
     await redisClient.setEx(redisKey, 60 * 60, JSON.stringify(user));
@@ -128,6 +134,7 @@ export const getProfile = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const getSearchUsers = async (req, res) => {
   try {
     const name = req.query.name;
