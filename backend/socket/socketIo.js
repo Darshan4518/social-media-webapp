@@ -24,7 +24,7 @@ const updateOnlineUsers = async () => {
     const keys = await redisClient.keys("*");
     io.emit("getOnlineUser", keys);
   } catch (err) {
-    return res.status(500).json({ message: "Internal server error" });
+    return;
   }
 };
 
@@ -32,7 +32,7 @@ export const getReceiverSocketId = async (receiverId) => {
   try {
     return await redisClient.get(receiverId);
   } catch (err) {
-    return res.status(500).json({ message: "Internal server error" });
+    return;
   }
 };
 
@@ -42,7 +42,7 @@ io.on("connection", (socket) => {
   if (userId) {
     redisClient.set(userId, socket.id, (err) => {
       if (err) {
-        return res.status(500).json({ message: "Internal server error" });
+        return;
       }
     });
     updateOnlineUsers();
@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
       if (socketId === socket.id) {
         redisClient.del(userId, (err) => {
           if (err) {
-            return res.status(500).json({ message: "Internal server error" });
+            return;
           }
           updateOnlineUsers();
         });
