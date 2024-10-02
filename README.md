@@ -1,4 +1,4 @@
-<h1 align="center">Social Media Application</h1>
+<h1 align="center">D-Media (Social Media) Application</h1>
 
 <p>This is a feature-rich social media application built with modern technologies, providing a seamless and interactive user experience.</p>
 
