@@ -21,7 +21,7 @@ const Feeds = () => {
     const res = await axios.get("http://localhost:5000/api/v1/post/all", {
       withCredentials: true,
     });
-    return res.data.posts?.posts;
+    return res?.data?.posts || [];
   };
 
   const { isPending, data: posts } = useQuery({

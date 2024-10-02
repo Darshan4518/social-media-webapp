@@ -2,16 +2,12 @@ import React, { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import {
-  followRequest,
-  followSuccess,
-  setSuggestedUsers,
-  unfollowSuccess,
-} from "@/redux/authSlice";
+
 import { ScrollArea } from "./ui/scroll-area";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { setSuggestedUsers } from "@/redux/authSlice";
 
 const SuggestedUsers = () => {
   const dispatch = useDispatch();
@@ -24,36 +20,25 @@ const SuggestedUsers = () => {
         withCredentials: true,
       }
     );
+    console.log("Fetched data:", res.data.users);
     return res.data.users;
   };
 
-  const { isPending, data: suggestedUsers } = useQuery({
+  const {
+    isPending,
+    data: suggestedUsers,
+    isSuccess,
+  } = useQuery({
     queryKey: ["suggestedUsers"],
     queryFn: fetchSuggestedUsers,
     staleTime: 60000,
   });
 
-  const followOrUnfollowUser = async (id, isFollowing) => {
-    try {
-      dispatch(followRequest());
-
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
-        {},
-        { withCredentials: true }
-      );
-
-      const { action, user: updatedUser } = res.data;
-
-      if (action === "follow") {
-        dispatch(followSuccess(updatedUser));
-      } else if (action === "unfollow") {
-        dispatch(unfollowSuccess(updatedUser));
-      }
-    } catch (error) {
-      console.error(error);
+  useEffect(() => {
+    if (isSuccess && suggestedUsers) {
+      dispatch(setSuggestedUsers(suggestedUsers));
     }
-  };
+  }, [isSuccess, suggestedUsers, dispatch]);
 
   return (
     <div className="xl:w-[25%] md:w-[30%] hidden lg:block">
@@ -113,12 +98,7 @@ const SuggestedUsers = () => {
                     </p>
                   </div>
                 </Link>
-                <button
-                  className="text-blue-500 cursor-pointer"
-                  onClick={() =>
-                    followOrUnfollowUser(suggestedUser._id, isFollowing)
-                  }
-                >
+                <button className="text-blue-500 cursor-pointer">
                   {isFollowing ? "Unfollow" : "Follow"}
                 </button>
               </div>

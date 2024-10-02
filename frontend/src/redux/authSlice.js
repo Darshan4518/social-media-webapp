@@ -4,82 +4,42 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
-    userProfile: null,
-    searchUser: [],
-    isLoading: false,
-    error: null,
+    suggestedUsers: [],
   },
   reducers: {
     setAuthUser: (state, action) => {
       state.user = action.payload;
     },
+    followUser: (state, action) => {
+      const { userId } = action.payload;
 
-    setUseProfile: (state, action) => {
-      state.userProfile = action.payload;
-    },
-    followRequest: (state) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    followSuccess: (state, action) => {
-      const targetUser = action.payload;
-      state.isLoading = false;
-
-      if (
-        state.user &&
-        targetUser &&
-        !state.user.following.includes(targetUser._id)
-      ) {
-        state.user.following.push(targetUser._id);
-      }
-
-      if (
-        state.userProfile &&
-        targetUser &&
-        state.userProfile._id === targetUser._id
-      ) {
-        state.userProfile.followers.push(state.user._id);
+      if (!state.user.following.includes(userId)) {
+        state.user.following.push(userId);
+        state.user.followerCount += 1;
       }
     },
-    unfollowSuccess: (state, action) => {
-      const targetUser = action.payload;
-      state.isLoading = false;
+    unfollowUser: (state, action) => {
+      const { userId } = action.payload;
 
-      if (state.user && targetUser) {
+      if (state.user.following.includes(userId)) {
         state.user.following = state.user.following.filter(
-          (id) => id !== targetUser._id
+          (id) => id !== userId
         );
-      }
-
-      if (
-        state.userProfile &&
-        targetUser &&
-        state.userProfile._id === targetUser._id
-      ) {
-        state.userProfile.followers = state.userProfile.followers.filter(
-          (id) => id !== state.user._id
-        );
+        state.user.followerCount -= 1;
       }
     },
-    followFailure: (state, action) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    },
-    setSearchUser: (state, action) => {
-      state.searchUser = action.payload;
+    setSuggestedUsers: (state, action) => {
+      state.suggestedUsers = action.payload;
     },
   },
 });
 
 export const {
   setAuthUser,
+  followUser,
+  unfollowUser,
+  suggestedUsers,
   setSuggestedUsers,
-  setUseProfile,
-  followRequest,
-  followFailure,
-  followSuccess,
-  unfollowSuccess,
-  setSearchUser,
 } = authSlice.actions;
 
 export default authSlice.reducer;

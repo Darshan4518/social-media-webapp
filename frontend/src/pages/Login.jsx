@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
-
 import { MdOutlineAlternateEmail } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,25 +12,30 @@ import { Loader2 } from "lucide-react";
 const Login = () => {
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
-
-  if (user) {
-    navigate("/");
-  }
   const dispatch = useDispatch();
+
   const [loading, setLoading] = useState(false);
   const [passwordType, setPasswordType] = useState(true);
   const [input, setInput] = useState({
     email: "",
     password: "",
   });
+
+  // UseEffect to navigate after component renders
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
   const inputFieldHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
   const formHandler = async (e) => {
     e.preventDefault();
-
     setLoading(true);
+
     try {
       const res = await axios.post(
         "http://localhost:5000/api/v1/user/login",
@@ -41,13 +45,13 @@ const Login = () => {
         }
       );
       if (res.data.success) {
-        navigate("/");
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
         setInput({
           email: "",
           password: "",
         });
+        navigate("/"); // Safe to navigate here after the action
       }
     } catch (error) {
       setLoading(false);
@@ -146,8 +150,8 @@ const Login = () => {
             </button>
           )}
 
-          <p className="text-center text-sm  text-gray-500">
-            Create a new account?
+          <p className="text-center text-sm text-gray-500">
+            Create a new account?{" "}
             <Link
               className="underline text-blue-500 font-semibold"
               to="/signup"

@@ -69,20 +69,18 @@ export const getAllPost = async (req, res) => {
       .populate({ path: "author", select: "profilePicture userName" })
       .populate({
         path: "comments",
-        sort: { createdAt: -1 },
+        options: { sort: { createdAt: -1 } },
         populate: { path: "author", select: "profilePicture userName" },
       });
 
-    const response = {
+    await redisClient.setEx(redisKey, 60, JSON.stringify(posts));
+
+    return res.status(200).json({
       message: "Received all posts",
       posts,
-    };
-
-    await redisClient.setEx(redisKey, 60, JSON.stringify(response));
-
-    return res.status(200).json(response);
+    });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching posts:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

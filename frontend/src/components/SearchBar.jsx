@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 import { ScrollArea } from "./ui/scroll-area";
-import { useDispatch, useSelector } from "react-redux";
 import { Input } from "./ui/input";
 import axios from "axios";
 import { Loader, X } from "lucide-react";
-import { setSearchUser } from "@/redux/authSlice";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 

@@ -5,6 +5,7 @@ import getDataUri from "../utils/dataUriParser.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/posts.model.js";
 import redisClient from "../utils/redisClient.js";
+import mongoose from "mongoose";
 
 import dotenv from "dotenv";
 
@@ -189,6 +190,7 @@ export const editProfile = async (req, res) => {
 
     await redisClient.del(`user:${userId}`);
     await redisClient.del(`user:${user.email}`);
+    await redisClient.del(`user:${userId}:profile`);
 
     return res.status(200).json({ message: "Profile updated", user });
   } catch (error) {
@@ -196,6 +198,7 @@ export const editProfile = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const getSuggestedUsers = async (req, res) => {
   try {
     const redisKey = `users:suggested`;
@@ -221,10 +224,20 @@ export const getSuggestedUsers = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const followOrUnfollow = async (req, res) => {
   try {
-    const currentUserId = req.id;
-    const targetUserId = req.params.id;
+    const currentUserId = req.id?.toString();
+    const targetUserId = req.params.id?.toString();
+
+    if (
+      !mongoose.Types.ObjectId.isValid(currentUserId) ||
+      !mongoose.Types.ObjectId.isValid(targetUserId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user ID" });
+    }
 
     if (currentUserId === targetUserId) {
       return res
@@ -232,6 +245,7 @@ export const followOrUnfollow = async (req, res) => {
         .json({ success: false, message: "Cannot follow yourself" });
     }
 
+    // Fetch both the current user and the target user
     const currentUser = await User.findById(currentUserId).select("-password");
     const targetUser = await User.findById(targetUserId);
 
@@ -244,35 +258,21 @@ export const followOrUnfollow = async (req, res) => {
     const isFollowing = currentUser.following.includes(targetUserId);
 
     if (isFollowing) {
-      await Promise.all([
-        User.updateOne(
-          { _id: currentUserId },
-          { $pull: { following: targetUserId } }
-        ),
-        User.updateOne(
-          { _id: targetUserId },
-          { $pull: { followers: currentUserId } }
-        ),
-      ]);
+      // Unfollow logic
+      currentUser.following = currentUser.following.filter(
+        (id) => id.toString() !== targetUserId
+      );
+      targetUser.followers = targetUser.followers.filter(
+        (id) => id.toString() !== currentUserId
+      );
     } else {
-      await Promise.all([
-        User.updateOne(
-          { _id: currentUserId },
-          { $push: { following: targetUserId } }
-        ),
-        User.updateOne(
-          { _id: targetUserId },
-          { $push: { followers: currentUserId } }
-        ),
-      ]);
+      // Follow logic
+      currentUser.following.push(targetUserId);
+      targetUser.followers.push(currentUserId);
     }
 
+    // Save both users after updating
     await Promise.all([currentUser.save(), targetUser.save()]);
-
-    // Invalidate caches
-    await redisClient.del(`user:${currentUserId}`);
-    await redisClient.del(`user:${targetUserId}`);
-    await redisClient.del(`users:suggested`);
 
     return res.status(200).json({
       success: true,
@@ -280,6 +280,7 @@ export const followOrUnfollow = async (req, res) => {
       message: isFollowing
         ? "Unfollowed successfully"
         : "Followed successfully",
+      currentUser,
     });
   } catch (error) {
     console.error(error);

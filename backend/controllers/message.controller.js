@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
 import redisClient from "../utils/redisClient.js";
+import { getReceiverSocketId, io } from "../socket/socketIo.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -11,6 +13,13 @@ export const sendMessage = async (req, res) => {
     if (!senderId || !receiverId) {
       return res.status(400).json({ success: false, message: "Invalid IDs" });
     }
+
+    if (!message || message.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Message cannot be empty" });
+    }
+
     if (
       !mongoose.isValidObjectId(senderId) ||
       !mongoose.isValidObjectId(receiverId)
@@ -36,8 +45,7 @@ export const sendMessage = async (req, res) => {
       message,
     });
 
-    if (newMessage) conversation.messages.push(newMessage._id);
-
+    conversation.messages.push(newMessage._id);
     await Promise.all([conversation.save(), newMessage.save()]);
 
     await redisClient.set(
@@ -66,6 +74,16 @@ export const getMessages = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
+
+    if (
+      !mongoose.isValidObjectId(senderId) ||
+      !mongoose.isValidObjectId(receiverId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ObjectId" });
+    }
+
     const redisKey = `conversation:${senderId}:${receiverId}`;
 
     const cachedMessages = await redisClient.get(redisKey);
@@ -75,7 +93,7 @@ export const getMessages = async (req, res) => {
         .json({ success: true, messages: JSON.parse(cachedMessages) });
     }
 
-    let conversation = await Conversation.findOne({
+    const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     }).populate("messages");
 
@@ -97,10 +115,17 @@ export const getMessages = async (req, res) => {
       .json({ success: false, message: "Failed to get messages" });
   }
 };
+
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
     const userId = req.id;
+
+    if (!mongoose.isValidObjectId(messageId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid message ID" });
+    }
 
     const message = await Message.findById(messageId);
 
@@ -121,7 +146,6 @@ export const deleteMessage = async (req, res) => {
     );
 
     await message.deleteOne();
-
     await redisClient.del(`message:${messageId}`);
 
     const receiverSocketId = getReceiverSocketId(message.receiverId);
@@ -136,8 +160,9 @@ export const deleteMessage = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Message deleted" });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
-      .json({ success: false, error: "Failed to delete message" });
+      .json({ success: false, message: "Failed to delete message" });
   }
 };

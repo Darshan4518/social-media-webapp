@@ -1,31 +1,35 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "./MainLayout";
 import { Button } from "@/components/ui/button";
 import { Loader, Settings } from "lucide-react";
+import axios from "axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { setAuthUser, followUser, unfollowUser } from "@/redux/authSlice";
 import { LuGrid } from "react-icons/lu";
 import { GoVideo } from "react-icons/go";
 import { FaBookmark } from "react-icons/fa";
-import axios from "axios";
-import {
-  followFailure,
-  followSuccess,
-  unfollowSuccess,
-  followRequest,
-} from "@/redux/authSlice";
-import { useQuery } from "@tanstack/react-query";
 
 const UserProfile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const dispatch = useDispatch();
   const { user } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
+
   const [activeTab, setActiveTab] = useState("post");
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [isRequestInProgress, setIsRequestInProgress] = useState(false);
+
+  const followOrUnfollowUser = async (id) => {
+    const res = await axios.post(
+      `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
+      {},
+      { withCredentials: true }
+    );
+    return res.data;
+  };
 
   const fetchUserProfile = async () => {
     const res = await axios.get(
@@ -38,54 +42,50 @@ const UserProfile = () => {
   const { isPending, data: userProfile } = useQuery({
     queryKey: ["userProfile", id],
     queryFn: fetchUserProfile,
-    staleTime: 60000,
   });
 
-  const isLoggedUser = user?._id === userProfile?._id;
+  console.log(userProfile);
 
-  useEffect(() => {
-    if (userProfile) {
-      setIsFollowing(userProfile.followers?.includes(user?._id) || false);
-      setFollowerCount(userProfile.followers?.length || 0);
-    }
-  }, [userProfile, user]);
+  const isFollowing = user?.following?.includes(userProfile?._id);
+  const followerCount = userProfile?.followers?.length || 0;
 
-  const followOrUnfollowUser = async () => {
-    if (isRequestInProgress) return;
-    setIsRequestInProgress(true);
-    dispatch(followRequest());
+  const mutation = useMutation({
+    mutationFn: () => followOrUnfollowUser(id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["userProfile", id] });
 
-    try {
-      const res = await axios.post(
-        `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
-        {},
-        { withCredentials: true }
-      );
+      const previousUserData = queryClient.getQueryData(["userProfile", id]);
 
-      const { action, user: updatedUser } = res.data;
-
-      if (action === "follow") {
-        setIsFollowing(true);
-        setFollowerCount((prev) => prev + 1);
-        dispatch(followSuccess(updatedUser));
-      } else if (action === "unfollow") {
-        setIsFollowing(false);
-        setFollowerCount((prev) => prev - 1);
-        dispatch(unfollowSuccess(updatedUser));
+      if (isFollowing) {
+        dispatch(unfollowUser({ userId: id }));
+      } else {
+        dispatch(followUser({ userId: id }));
       }
-    } catch (error) {
-      dispatch(followFailure(error.message));
-    } finally {
-      setIsRequestInProgress(false);
-    }
-  };
+
+      return { previousUserData };
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousUserData) {
+        queryClient.setQueryData(["userProfile", id], context.previousUserData);
+      }
+    },
+    onSuccess: (data) => {
+      const { message, currentUser } = data;
+      dispatch(setAuthUser(currentUser));
+
+      toast.success(message);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["userProfile", id] });
+    },
+  });
 
   return (
     <MainLayout>
       <div className="flex flex-col items-center mx-auto w-full mt-7 gap-3 px-4 sm:px-6 lg:px-8">
         {isPending ? (
           <div className="flex justify-center items-center h-screen">
-            <Loader className=" animate-spin size-12" />
+            <Loader className="animate-spin size-12" />
           </div>
         ) : (
           <div className="w-full max-w-4xl">
@@ -102,7 +102,7 @@ const UserProfile = () => {
                     <p className="text-lg md:text-2xl capitalize">
                       {userProfile?.userName}
                     </p>
-                    {!isLoggedUser ? (
+                    {!user || user?._id === userProfile?._id ? null : (
                       <Button
                         variant="ghost"
                         className={`${
@@ -110,16 +110,13 @@ const UserProfile = () => {
                             ? "bg-gray-400 hover:bg-gray-300"
                             : "bg-blue-500 hover:bg-blue-300"
                         } mx-4 md:hidden`}
-                        onClick={followOrUnfollowUser}
-                        disabled={isRequestInProgress}
+                        onClick={() => mutation.mutate(id)}
                       >
                         {isFollowing ? "Unfollow" : "Follow"}
                       </Button>
-                    ) : (
-                      <Settings size={20} className="md:hidden" />
                     )}
                   </div>
-                  {isLoggedUser ? (
+                  {user?._id === userProfile?._id ? (
                     <div className="flex gap-x-3 items-center">
                       <Button
                         variant="ghost"
@@ -144,8 +141,7 @@ const UserProfile = () => {
                           ? "bg-gray-400 hover:bg-gray-300"
                           : "bg-blue-500 hover:bg-blue-300"
                       } mx-4 hidden md:block w-[100px]`}
-                      onClick={followOrUnfollowUser}
-                      disabled={isRequestInProgress}
+                      onClick={() => mutation.mutate(id)}
                     >
                       {isFollowing ? "Unfollow" : "Follow"}
                     </Button>
@@ -161,44 +157,52 @@ const UserProfile = () => {
                 </p>
               </div>
             </div>
-            <div className="flex md:hidden items-center justify-evenly text-lg gap-x-5 my-4">
-              <h2>{userProfile?.posts?.length} posts</h2>
-              <h2>{followerCount} followers</h2>
-              <h2>{userProfile?.following?.length} following</h2>
+
+            {/* Tab Navigation */}
+            <div className="flex items-center gap-x-8 justify-center mb-4">
+              {["post", "reels", "saved"].map((tab) => (
+                <h2
+                  key={tab}
+                  className={`${
+                    activeTab === tab ? "border-b-2 border-gray-800" : ""
+                  } p-1 cursor-pointer flex items-center gap-x-2 font-bold`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab === "post" && <LuGrid />}
+                  {tab === "reels" && <GoVideo />}
+                  {tab === "saved" && <FaBookmark />}
+                  {tab.toUpperCase()}
+                </h2>
+              ))}
             </div>
-            <hr />
-            <div>
-              <div className="flex items-center gap-x-8 justify-center mb-4">
-                {["post", "reels", "saved"].map((tab) => (
-                  <h2
-                    key={tab}
-                    className={`${
-                      activeTab === tab ? "border-b-2 border-gray-800" : ""
-                    } p-1 cursor-pointer flex items-center gap-x-2 font-bold`}
-                    onClick={() => setActiveTab(tab)}
+
+            {/* Tab Content */}
+            <div className="flex flex-wrap gap-4 max-w-full">
+              {activeTab === "post" &&
+                userProfile?.posts?.map((post, index) => (
+                  <div
+                    key={index}
+                    className="lg:max-w-[300px] lg:max-h-[300px] max-w-[200px] max-h-[300px] h-60"
                   >
-                    {tab === "post" && <LuGrid />}
-                    {tab === "reels" && <GoVideo />}
-                    {tab === "saved" && <FaBookmark />}
-                    {tab.toUpperCase()}
-                  </h2>
+                    <img
+                      src={post.image}
+                      alt="post"
+                      className="w-full h-full object-fill rounded-sm"
+                    />
+                  </div>
                 ))}
-              </div>
-              <div className="flex flex-wrap gap-4 max-w-full">
-                {activeTab === "post" &&
-                  userProfile?.posts?.map((post, index) => (
-                    <div
-                      key={index}
-                      className="lg:max-w-[300px] lg:max-h-[300px] max-w-[200px] max-h-[300px] h-60"
-                    >
-                      <img
-                        src={post.image}
-                        alt="post"
-                        className="w-full h-full object-fill rounded-sm"
-                      />
-                    </div>
-                  ))}
-              </div>
+
+              {activeTab === "reels" && (
+                <div>
+                  <h2>No Reels Yet</h2>
+                </div>
+              )}
+
+              {activeTab === "saved" && (
+                <div>
+                  <h2>No Saved Posts Yet</h2>
+                </div>
+              )}
             </div>
           </div>
         )}
