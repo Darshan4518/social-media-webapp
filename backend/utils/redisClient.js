@@ -1,24 +1,18 @@
-// redisClient.js
 import { createClient } from "redis";
+import dotenv from "dotenv";
+dotenv.config();
 
 const redisClient = createClient({
-  password: "pbNM472fAPdVnf6GcgA3HQN4W9XEPWjR",
+  password: process.env.REDIS_PASSWORD,
   socket: {
-    host: "redis-16313.c305.ap-south-1-1.ec2.redns.redis-cloud.com",
-    port: 16313,
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
   },
 });
 
 redisClient.on("error", (err) => {
-  console.error("Redis error:", err);
+  return res.status(500).json({ message: "Internal server error" });
 });
 
-redisClient
-  .connect()
-  .then(() => {
-    console.log("Connected to Redis successfully!");
-  })
-  .catch((err) => {
-    console.error("Redis connection error:", err);
-  });
+redisClient.connect();
 export default redisClient;

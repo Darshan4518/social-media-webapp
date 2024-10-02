@@ -48,7 +48,6 @@ export const uploadPost = async (req, res) => {
 
     return res.status(201).json({ message: "Post created successfully", post });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -80,7 +79,6 @@ export const getAllPost = async (req, res) => {
       posts,
     });
   } catch (error) {
-    console.error("Error fetching posts:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -130,7 +128,6 @@ export const getUserPost = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -166,7 +163,7 @@ export const likePost = async (req, res) => {
 
     return res.status(201).json({ message: "Liked post" });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -202,7 +199,7 @@ export const disLikePost = async (req, res) => {
 
     return res.status(201).json({ message: "Disliked post" });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 export const commentPost = async (req, res) => {
@@ -233,7 +230,7 @@ export const commentPost = async (req, res) => {
 
     return res.status(201).json({ message: "Comment added", comment });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 export const deleteComment = async (req, res) => {
@@ -257,7 +254,6 @@ export const deleteComment = async (req, res) => {
 
     return res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -284,7 +280,7 @@ export const deletePost = async (req, res) => {
 
     return res.status(200).json({ message: "Post deleted" });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 export const bookmarkPost = async (req, res) => {
@@ -316,6 +312,6 @@ export const bookmarkPost = async (req, res) => {
         .json({ type: "saved", message: "Post bookmarked successfully", post });
     }
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

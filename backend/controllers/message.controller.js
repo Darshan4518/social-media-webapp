@@ -63,7 +63,6 @@ export const sendMessage = async (req, res) => {
 
     return res.status(200).json({ success: true, newMessage });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ success: false, message: "Failed to send message" });
@@ -109,7 +108,6 @@ export const getMessages = async (req, res) => {
       .status(200)
       .json({ success: true, messages: conversation.messages });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ success: false, message: "Failed to get messages" });
@@ -160,7 +158,6 @@ export const deleteMessage = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Message deleted" });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ success: false, message: "Failed to delete message" });

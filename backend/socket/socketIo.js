@@ -9,7 +9,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5174", "http://localhost:5173"],
+    origin: [
+      "http://localhost:5174",
+      "http://localhost:5173",
+      "https://social-media-webapp-bay.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
@@ -20,7 +24,7 @@ const updateOnlineUsers = async () => {
     const keys = await redisClient.keys("*");
     io.emit("getOnlineUser", keys);
   } catch (err) {
-    console.error("Error fetching online users from Redis:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -28,7 +32,7 @@ export const getReceiverSocketId = async (receiverId) => {
   try {
     return await redisClient.get(receiverId);
   } catch (err) {
-    console.error("Error fetching receiver socket ID from Redis:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -38,7 +42,7 @@ io.on("connection", (socket) => {
   if (userId) {
     redisClient.set(userId, socket.id, (err) => {
       if (err) {
-        console.error("Error setting user socket ID in Redis:", err);
+        return res.status(500).json({ message: "Internal server error" });
       }
     });
     updateOnlineUsers();
@@ -50,7 +54,7 @@ io.on("connection", (socket) => {
       if (socketId === socket.id) {
         redisClient.del(userId, (err) => {
           if (err) {
-            console.error("Error deleting user socket ID from Redis:", err);
+            return res.status(500).json({ message: "Internal server error" });
           }
           updateOnlineUsers();
         });

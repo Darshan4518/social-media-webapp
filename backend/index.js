@@ -18,7 +18,11 @@ app.use(urlencoded({ extended: true }));
 
 // CORS Configuration
 const corsOptions = {
-  origin: ["http://localhost:5174", "http://localhost:5173"],
+  origin: [
+    "http://localhost:5174",
+    "http://localhost:5173",
+    "https://social-media-webapp-bay.vercel.app",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 };
@@ -37,12 +41,9 @@ connectDB();
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
-});
+server.listen(PORT);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
   res.status(500).json({ message: "Something went wrong!" });
 });
