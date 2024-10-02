@@ -43,7 +43,6 @@ const Sidebar = () => {
     }
   };
   const { user } = useSelector((store) => store.auth);
-  const { messages } = useSelector((store) => store.chat);
   const { likeNotify } = useSelector((store) => store.rtmLikeNotify);
   const [openCreatePost, setOpenCreatePost] = useState(false);
   const [openLikeSheet, setOpenLikeSheet] = useState(false);
@@ -80,17 +79,9 @@ const Sidebar = () => {
   return (
     <div className="flex h-screen flex-col justify-between border-e bg-white ">
       <div className="px-4 py-6  fixed top-2">
-        <div className="lg:grid h-10 w-32 hidden  place-content-center ">
-          <img
-            src={instaLogo}
-            alt="logo"
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <span className="grid h-10 px-4 mx-auto lg:hidden   ">
-          <FaInstagram size={28} />
-        </span>
-
+        <h3 className=" font-bold text-gray-800 text-center text-xl">
+          D-Media
+        </h3>
         <ul className="mt-6 space-y-3">
           {sidebarItems.map(({ name, Icon }) => (
             <li key={name} className="relative">

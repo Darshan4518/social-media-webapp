@@ -6,6 +6,7 @@ import axios from "axios";
 import { Loader, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 const SearchBar = ({ open, setOpen }) => {
   const [search, setSearch] = useState("");
@@ -61,11 +62,15 @@ const SearchBar = ({ open, setOpen }) => {
                   key={user._id}
                   className="flex items-center gap-4 p-2"
                 >
-                  <img
+                  <Avatar
                     src={user?.profilePicture}
                     alt={user?.userName}
                     className="w-10 h-10 rounded-full"
-                  />
+                  >
+                    <AvatarFallback className="uppercase">
+                      {user?.userName?.slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="font-medium">{user?.userName}</span>
                 </Link>
               ))

@@ -44,8 +44,6 @@ const UserProfile = () => {
     queryFn: fetchUserProfile,
   });
 
-  console.log(userProfile);
-
   const isFollowing = user?.following?.includes(userProfile?._id);
   const followerCount = userProfile?.followers?.length || 0;
 
@@ -72,7 +70,6 @@ const UserProfile = () => {
     onSuccess: (data) => {
       const { message, currentUser } = data;
       dispatch(setAuthUser(currentUser));
-
       toast.success(message);
     },
     onSettled: () => {
@@ -89,15 +86,15 @@ const UserProfile = () => {
           </div>
         ) : (
           <div className="w-full max-w-4xl">
-            <div className="flex flex-row gap-x-10 md:gap-x-20 items-center mb-5">
-              <Avatar className="w-20 h-20 md:w-[150px] md:h-[150px]">
+            <div className="flex flex-col sm:flex-row gap-x-10 md:gap-x-20 items-center mb-5">
+              <Avatar className="w-24 h-24 sm:w-[150px] sm:h-[150px]">
                 <AvatarImage src={userProfile?.profilePicture} />
                 <AvatarFallback>
                   {userProfile?.userName?.slice(0, 2)?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="mt-4 md:mt-0">
-                <div className="flex flex-col md:flex-row gap-x-3 md:items-center">
+              <div className="mt-4 md:mt-0 text-center md:text-left">
+                <div className="flex flex-col sm:flex-row gap-x-3 md:items-center">
                   <div className="flex gap-x-2 items-center">
                     <p className="text-lg md:text-2xl capitalize">
                       {userProfile?.userName}
@@ -147,7 +144,7 @@ const UserProfile = () => {
                     </Button>
                   )}
                 </div>
-                <div className="hidden md:flex flex-row items-center my-3 gap-x-5">
+                <div className="flex  items-center my-3 gap-x-5">
                   <h2>{userProfile?.posts?.length} posts</h2>
                   <h2>{followerCount} followers</h2>
                   <h2>{userProfile?.following?.length} following</h2>
