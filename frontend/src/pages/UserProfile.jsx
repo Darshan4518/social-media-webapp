@@ -24,7 +24,7 @@ const UserProfile = () => {
 
   const followOrUnfollowUser = async (id) => {
     const res = await axios.post(
-      `http://localhost:5000/api/v1/user/followorunfollow/${id}`,
+      `https://social-media-webapp-2z2m.onrender.com/api/v1/user/followorunfollow/${id}`,
       {},
       { withCredentials: true }
     );
@@ -33,7 +33,7 @@ const UserProfile = () => {
 
   const fetchUserProfile = async () => {
     const res = await axios.get(
-      `http://localhost:5000/api/v1/user/${id}/profile`,
+      `https://social-media-webapp-2z2m.onrender.com/api/v1/user/${id}/profile`,
       { withCredentials: true }
     );
     return res.data.user;

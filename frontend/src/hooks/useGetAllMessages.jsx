@@ -11,7 +11,7 @@ const useGetAllMessages = () => {
   const fetchAllMessages = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/v1/message/all/${selectedUser?._id}`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/message/all/${selectedUser?._id}`,
         {
           withCredentials: true,
         }
@@ -20,7 +20,7 @@ const useGetAllMessages = () => {
         dispatch(setMessages(res.data.messages));
       }
     } catch (error) {
-      console.log(error);
+      toast.error("something went worng");
     }
   };
   useEffect(() => {

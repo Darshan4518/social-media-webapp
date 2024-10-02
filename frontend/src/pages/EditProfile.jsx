@@ -41,7 +41,7 @@ const EditProfile = () => {
       });
 
       const res = await axios.put(
-        "http://localhost:5000/api/v1/user/profile/edit",
+        "https://social-media-webapp-2z2m.onrender.com/api/v1/user/profile/edit",
         formData,
         {
           headers: {
@@ -55,7 +55,6 @@ const EditProfile = () => {
         toast.success("Profile updated successfully");
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
       toast.error("Error updating profile");
     } finally {
       setLoader(false);

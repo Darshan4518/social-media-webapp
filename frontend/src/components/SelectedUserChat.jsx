@@ -43,7 +43,7 @@ const SelectedUserChat = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/message/send/${selectedUser?._id}`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/message/send/${selectedUser?._id}`,
         { message },
         {
           headers: {
@@ -57,7 +57,7 @@ const SelectedUserChat = () => {
         setMessage("");
       }
     } catch (error) {
-      console.error(error);
+      toast.error("something went worng");
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ const SelectedUserChat = () => {
   const deleteMessage = async () => {
     try {
       const res = await axios.delete(
-        `http://localhost:5000/api/v1/message/delete/${selectedMessageId}`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/message/delete/${selectedMessageId}`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -88,7 +88,7 @@ const SelectedUserChat = () => {
         handleClose();
       }
     } catch (error) {
-      console.error(error);
+      toast.error("something went worng");
     }
   };
 

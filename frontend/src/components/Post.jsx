@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setPosts } from "@/redux/postsSlice";
 import CommentSection from "./CommentSection";
+import { toast } from "sonner";
 
 const Post = ({ post }) => {
   const { user } = useSelector((store) => store.auth);
@@ -30,7 +31,7 @@ const Post = ({ post }) => {
   const deletePost = async () => {
     try {
       const res = await axios.delete(
-        `http://localhost:5000/api/v1/post/delete/${post._id}`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/post/delete/${post._id}`,
         { withCredentials: true }
       );
       if (res.status === 201) {
@@ -38,7 +39,7 @@ const Post = ({ post }) => {
         setOpen(false);
       }
     } catch (error) {
-      console.log(error);
+      toast.error("something went worng");
     }
   };
 
@@ -46,7 +47,7 @@ const Post = ({ post }) => {
     try {
       const action = like ? "dislike" : "like";
       const res = await axios.get(
-        `http://localhost:5000/api/v1/post/${post?._id}/${action}`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/post/${post?._id}/${action}`,
         { withCredentials: true }
       );
       if (res.status === 201) {
@@ -62,14 +63,14 @@ const Post = ({ post }) => {
         dispatch(setPosts(updatedData));
       }
     } catch (error) {
-      console.log(error);
+      toast.error("something went worng");
     }
   };
 
   const addComment = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/post/${post._id}/comment`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/post/${post._id}/comment`,
         { text },
         { withCredentials: true }
       );
@@ -82,7 +83,7 @@ const Post = ({ post }) => {
         setComment("");
       }
     } catch (error) {
-      console.log(error);
+      toast.error("something went worng");
     }
   };
 

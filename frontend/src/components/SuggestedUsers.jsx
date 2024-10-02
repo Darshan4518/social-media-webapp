@@ -15,12 +15,11 @@ const SuggestedUsers = () => {
 
   const fetchSuggestedUsers = async () => {
     const res = await axios.get(
-      "http://localhost:5000/api/v1/user/suggestedusers",
+      "https://social-media-webapp-2z2m.onrender.com/api/v1/user/suggestedusers",
       {
         withCredentials: true,
       }
     );
-    console.log("Fetched data:", res.data.users);
     return res.data.users;
   };
 

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { GrLinkPrevious } from "react-icons/gr";
 import { Textarea } from "./ui/textarea";
 import axios from "axios";
+import { toast } from "sonner";
 
 const DragDropUpload = ({ setOpen }) => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -47,7 +48,7 @@ const DragDropUpload = ({ setOpen }) => {
 
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/v1/post/addpost`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/post/addpost`,
         formData,
         {
           headers: {
@@ -59,7 +60,7 @@ const DragDropUpload = ({ setOpen }) => {
       setOpen(false);
       handleImageRemove();
     } catch (error) {
-      console.error("Error posting the image:", error);
+      toast.error("Error posting the image");
     }
   };
 

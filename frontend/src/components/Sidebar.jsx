@@ -20,15 +20,19 @@ import { LogOut } from "lucide-react";
 import axios from "axios";
 import LikeNotificationBar from "./LikeNotificationBar";
 import SearchBar from "./SearchBar";
+import { toast } from "sonner";
 const Sidebar = () => {
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
   const logoutHandler = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/user/logout", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        "https://social-media-webapp-2z2m.onrender.com/api/v1/user/logout",
+        {
+          withCredentials: true,
+        }
+      );
 
       if (res.data.success) {
         dispatch(setAuthUser(null));
@@ -36,10 +40,10 @@ const Sidebar = () => {
         dispatch(setPosts([]));
         navigate("/login");
       } else {
-        console.error("Logout failed:", res.data.message);
+        toast.error("Logout failed:", res.data.message);
       }
     } catch (error) {
-      console.error("Error during logout:", error);
+      toast.error("something went worng");
     }
   };
   const { user } = useSelector((store) => store.auth);

@@ -25,9 +25,12 @@ const Feeds = () => {
   const [openLikeSheet, setOpenLikeSheet] = useState(false);
 
   const getPosts = async () => {
-    const res = await axios.get("http://localhost:5000/api/v1/post/all", {
-      withCredentials: true,
-    });
+    const res = await axios.get(
+      "https://social-media-webapp-2z2m.onrender.com/api/v1/post/all",
+      {
+        withCredentials: true,
+      }
+    );
     return res?.data?.posts || [];
   };
 

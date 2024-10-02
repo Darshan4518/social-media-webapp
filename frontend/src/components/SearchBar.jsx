@@ -14,7 +14,7 @@ const SearchBar = ({ open, setOpen }) => {
   const getSearchUsers = async () => {
     if (search.trim()) {
       const res = await axios.get(
-        `http://localhost:5000/api/v1/user/getsearchusers?name=${search}`,
+        `https://social-media-webapp-2z2m.onrender.com/api/v1/user/getsearchusers?name=${search}`,
         { withCredentials: true }
       );
       return res.data.users;

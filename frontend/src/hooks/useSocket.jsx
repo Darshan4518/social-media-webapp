@@ -10,7 +10,7 @@ const useSocket = () => {
 
   useEffect(() => {
     if (user) {
-      const socketIo = io("http://localhost:5000", {
+      const socketIo = io("https://social-media-webapp-2z2m.onrender.com", {
         transports: ["websocket", "polling"],
         query: { userId: user._id },
       });
