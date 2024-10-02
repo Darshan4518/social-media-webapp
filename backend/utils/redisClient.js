@@ -11,7 +11,7 @@ const redisClient = createClient({
 });
 
 redisClient.on("error", (err) => {
-  return res.status(500).json({ message: "Internal server error" });
+  return;
 });
 
 redisClient.connect();
