@@ -18,7 +18,11 @@ app.use(urlencoded({ extended: true }));
 
 // CORS Configuration
 const corsOptions = {
-  origin: ["https://social-media-webapp-bay.vercel.app"],
+  origin: [
+    "https://social-media-webapp-bay.vercel.app",
+    "http://localhost:19000",
+    "http://192.168.1.*:19000",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

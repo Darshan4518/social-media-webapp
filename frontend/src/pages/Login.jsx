@@ -51,7 +51,7 @@ const Login = () => {
           email: "",
           password: "",
         });
-        navigate("/"); // Safe to navigate here after the action
+        navigate("/");
       }
     } catch (error) {
       setLoading(false);
