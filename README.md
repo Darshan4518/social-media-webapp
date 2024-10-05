@@ -1,4 +1,4 @@
-<h1 align="center">🎉 D-Media (Social Media Application) 🎉</h1>
+<h1 align="center">🎉 D-Media (Social Media Webapp) 🎉</h1>
 
 <p align="center">This is a feature-rich social media application built with modern technologies, providing a seamless and interactive user experience.</p>
 
