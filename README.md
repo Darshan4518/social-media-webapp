@@ -37,6 +37,8 @@
 <h2>🖼️ Screenshots</h2>
 <p>Here are some screenshots of the application in action:</p>
 
+![Screenshot 2024-10-08 203243](https://github.com/user-attachments/assets/7d079612-0bbc-4d36-a41b-5aefb52ad5ef)
+
 <h2>💻 Installation and Setup</h2>
 <ol>
   <li>Clone the repository and navigate into the project directory.</li>
